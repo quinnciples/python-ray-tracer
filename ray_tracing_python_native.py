@@ -1,5 +1,5 @@
 import math
-from Q_Functions import Q_Vector3d, Q_map
+from QFunctions.Q_Functions import Q_Vector3d, Q_map
 import numpy as np
 import os
 import matplotlib.pyplot as plt
