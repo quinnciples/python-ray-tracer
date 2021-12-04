@@ -1,0 +1,3 @@
+[submodule "QFunctions"]
+	path = QFunctions
+	url = https://github.com/quinnciples/QFunctions.git
