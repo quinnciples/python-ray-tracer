@@ -4,8 +4,7 @@ from Ray import Ray
 import matplotlib.pyplot as plt
 import numpy as np
 import math
-from SpherePrimitive import SpherePrimitive
-
+from datetime import datetime as dt
 
 class Scene:
     def __init__(self, objects: list = [], lights: list = []):
@@ -15,15 +14,17 @@ class Scene:
     def nearest_intersection(self, ray: Ray):
         min_distance = math.inf
         obj = None
+        normal_to_surface = None
         for object in self.objects:
-            intersection = object.intersect(ray=ray)
-            if intersection and intersection < min_distance:
-                min_distance = intersection
+            this_distance, this_normal_to_surface = object.intersect(ray=ray)
+            if this_distance and this_distance < min_distance:
+                min_distance = this_distance
                 obj = object
-
-        return obj, min_distance
+                normal_to_surface = this_normal_to_surface
+        return (obj, min_distance, normal_to_surface)
 
     def render(self, camera_position: Q_Vector3d, width: int = 64, height: int = 64, max_depth: int = 1):
+        start_time = dt.now()
         image = np.zeros((height, width, 3))
         SCREEN_RATIO = float(width) / float(height)
         SCREEN_DIMS = {'left': -1, 'top': 1 / SCREEN_RATIO, 'right': 1, 'bottom': -1 / SCREEN_RATIO}
@@ -45,22 +46,24 @@ class Scene:
 
                 for _ in range(max_depth):
                     ray = Ray(origin=origin, direction=direction)
-                    nearest_object, distance_to_object = self.nearest_intersection(ray=ray)
+                    nearest_object, distance_to_object, normal_to_surface = self.nearest_intersection(ray=ray)
 
                     self.actual_max_depth = max(self.actual_max_depth, _ + 1)
 
                     # Did we even hit anything?
                     if nearest_object is None:
                         break
+                    if normal_to_surface is None:
+                        print('WTF***************')
 
                     intersection_point = origin + direction * distance_to_object
                     # Need to create a structure that can return the distance and normal from the object
-                    normal_to_surface = (intersection_point - nearest_object.position).normalized() if type(nearest_object) == SpherePrimitive else nearest_object.face_normal * -1
+                    # normal_to_surface = (intersection_point - nearest_object.position).normalized() if type(nearest_object) == SpherePrimitive else nearest_object.face_normal * -1
                     shifted_point = intersection_point + normal_to_surface * 1e-5
                     direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()
 
                     ray = Ray(origin=shifted_point, direction=direction_from_intersection_to_light)
-                    _, distance_to_object = self.nearest_intersection(ray=ray)
+                    _, distance_to_object, __ = self.nearest_intersection(ray=ray)
 
                     distance_to_light = (self.lights[0]['position'] - intersection_point).length
                     is_shadowed = distance_to_object < distance_to_light
@@ -99,3 +102,4 @@ class Scene:
         plt.imsave('image.png', image)
         print()
         print(f'Maximum depth allowed: {max_depth} -- Actual depth reached: {self.actual_max_depth}')
+        print(f'Render completed in {dt.now() - start_time}.')

@@ -3,17 +3,15 @@ from Ray import Ray
 import math
 from Primitive import Primitive
 
-class TrianglePrimitive:
+
+class TrianglePrimitive(Primitive):
 
     EPSILON = 0.000000001
 
     def __init__(self, vertices: tuple, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float):
+        Primitive.__init__(self, position=Q_Vector3d(0, 0, 0), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection)
         self.vertices = vertices
-        self.ambient = ambient
-        self.diffuse = diffuse
-        self.specular = specular
-        self.shininess = shininess
-        self.reflection = reflection
+        self.position = self._position
 
     @staticmethod
     def from_vertices(vertex_1: Q_Vector3d, vertex_2: Q_Vector3d, vertex_3: Q_Vector3d, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float):
@@ -35,9 +33,9 @@ class TrianglePrimitive:
         return self.u_vector.cross_product(self.v_vector).normalized()
 
     @property
-    def position(self) -> Q_Vector3d:
-        # return (self.vertices[0] + self.vertices[1] + self.vertices[2]) * (1 / 3)
-        return self.face_normal
+    def _position(self) -> Q_Vector3d:
+        return (self.vertices[0] + self.vertices[1] + self.vertices[2]) * (1 / 3)
+        # return self.face_normal
 
     def intersect(self, ray: Ray):
         # E1 = self.u_vector
@@ -61,7 +59,7 @@ class TrianglePrimitive:
 
         # ray and triangle are parallel if det is close to 0
         if (math.fabs(det) < TrianglePrimitive.EPSILON):
-            return
+            return None, None
 
         backfacing = det < TrianglePrimitive.EPSILON
 
@@ -71,16 +69,15 @@ class TrianglePrimitive:
         qVec = tVec.cross_product(self.u_vector)
         v = ray.direction.dot_product(qVec) * invDet
 
-        # extra parens to keep clang-format happy...
         if u < 0.0 or u > 1.0 or v < 0.0 or (u + v) > 1.0:
-            return
+            return None, None
 
         t = self.v_vector.dot_product(qVec) * invDet
 
         if (t < TrianglePrimitive.EPSILON):
-            return
+            return None, None
 
         if not backfacing:
-            return t  # and normal -- if backfacting return t and negative normal
+            return t, self.face_normal  # and normal -- if backfacting return t and negative normal
         else:
-            return t
+            return t, self.face_normal * -1

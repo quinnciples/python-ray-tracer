@@ -29,5 +29,8 @@ class SpherePrimitive(Primitive):
             t1 = (-b + math.sqrt(delta)) / 2
             t2 = (-b - math.sqrt(delta)) / 2
             if t1 > 0 and t2 > 0:
-                return min(t1, t2)
-        return None
+                distance = min(t1, t2)
+                intersection_point = ray.origin + ray.direction * distance
+                normal_to_surface = (intersection_point - self.position).normalized()
+                return distance, normal_to_surface
+        return None, None
