@@ -14,7 +14,7 @@ class SpherePrimitive(Primitive):
         Primitive.__init__(self, position=position, ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection)
         self.radius = float(radius)
 
-    def intersect(self, ray: Ray):
+    def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
         b = 2 * ray.direction.dot_product(other_vector=(ray.origin - self.position))
         c = ((ray.origin - self.position).length ** 2) - (self.radius ** 2)
 

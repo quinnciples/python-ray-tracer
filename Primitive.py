@@ -1,4 +1,5 @@
 from QFunctions.Q_Functions import Q_Vector3d
+from Ray import Ray
 
 
 class Primitive:
@@ -9,3 +10,6 @@ class Primitive:
         self.specular = specular
         self.shininess = shininess
         self.reflection = reflection
+
+    def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
+        return None, None

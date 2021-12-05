@@ -78,6 +78,6 @@ class TrianglePrimitive(Primitive):
             return None, None
 
         if not backfacing:
-            return t, self.face_normal  # and normal -- if backfacting return t and negative normal
+            return t, self.face_normal
         else:
             return t, self.face_normal * -1

@@ -5,8 +5,8 @@ from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
 
 
-WIDTH = 640
-HEIGHT = 480
+WIDTH = 64
+HEIGHT = 48
 CAMERA = Q_Vector3d(0, 0, -1.75)
 MAX_DEPTH = 5
 
