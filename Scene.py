@@ -28,6 +28,7 @@ class Scene:
         image = np.zeros((height, width, 3))
         SCREEN_RATIO = float(width) / float(height)
         SCREEN_DIMS = {'left': -1, 'top': 1 / SCREEN_RATIO, 'right': 1, 'bottom': -1 / SCREEN_RATIO}
+        self.actual_max_depth = 0
 
         for y in range(height):
             print(f'\r{y + 1}/{height}', end='')
@@ -42,13 +43,9 @@ class Scene:
                 color_value = Q_Vector3d(0, 0, 0)
                 reflection = 1
 
-                self.actual_max_depth = 0
-
-                for _ in range(max_depth):
+                for depth in range(max_depth):
                     ray = Ray(origin=origin, direction=direction)
                     nearest_object, distance_to_object, normal_to_surface = self.nearest_intersection(ray=ray)
-
-                    self.actual_max_depth = max(self.actual_max_depth, _ + 1)
 
                     # Did we even hit anything?
                     if nearest_object is None:
@@ -98,6 +95,8 @@ class Scene:
                     # Reset origination and direction to this point and continue recursively
                     origin = shifted_point
                     direction = direction.reflected(other_vector=normal_to_surface)
+
+                self.actual_max_depth = max(self.actual_max_depth, depth + 1)
 
         plt.imsave('image.png', image)
         print()

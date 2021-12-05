@@ -37,7 +37,7 @@ class TrianglePrimitive(Primitive):
         return (self.vertices[0] + self.vertices[1] + self.vertices[2]) * (1 / 3)
         # return self.face_normal
 
-    def intersect(self, ray: Ray):
+    def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
         # E1 = self.u_vector
         # E2 = self.v_vector
         # N = E1.cross_product(E2)
