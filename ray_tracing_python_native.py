@@ -58,7 +58,8 @@ class Scene:
                         break
 
                     intersection_point = origin + direction * distance_to_object
-                    normal_to_surface = (intersection_point - nearest_object.position).normalized()
+                    # Need to create a structure that can return the distance and normal from the object
+                    normal_to_surface = (intersection_point - nearest_object.position).normalized() if type(nearest_object) == SpherePrimitive else nearest_object.face_normal * -1
                     shifted_point = intersection_point + normal_to_surface * 1e-5
                     direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()
 
@@ -91,7 +92,6 @@ class Scene:
                     color_value += illumination * reflection
 
                     image[y, x] = color_value.clamp(0, 1).to_tuple()  # nearest_object['color'] if nearest_object else (0, 0, 0)
-                    
 
                     # Handle reflection and continue
                     reflection *= nearest_object.reflection  # Can we say if reflection == 0 then break here?
@@ -113,6 +113,89 @@ class Primitive:
         self.specular = specular
         self.shininess = shininess
         self.reflection = reflection
+
+
+class TrianglePrimitive:
+
+    EPSILON = 0.000000001
+
+    def __init__(self, vertices: tuple, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float):
+        self.vertices = vertices
+        self.ambient = ambient
+        self.diffuse = diffuse
+        self.specular = specular
+        self.shininess = shininess
+        self.reflection = reflection
+
+    @staticmethod
+    def from_vertices(vertex_1: Q_Vector3d, vertex_2: Q_Vector3d, vertex_3: Q_Vector3d, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float):
+        return TrianglePrimitive(vertices=(vertex_1, vertex_2, vertex_3), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection)
+
+    def vertex(self, index: int):
+        return self.vertices[index]
+
+    @property
+    def u_vector(self) -> Q_Vector3d:
+        return self.vertices[1] - self.vertices[0]
+
+    @property
+    def v_vector(self) -> Q_Vector3d:
+        return self.vertices[2] - self.vertices[0]
+
+    @property
+    def face_normal(self) -> Q_Vector3d:
+        return self.u_vector.cross_product(self.v_vector).normalized()
+
+    @property
+    def position(self) -> Q_Vector3d:
+        # return (self.vertices[0] + self.vertices[1] + self.vertices[2]) * (1 / 3)
+        return self.face_normal
+
+    def intersect(self, ray: Ray):
+        # E1 = self.u_vector
+        # E2 = self.v_vector
+        # N = E1.cross_product(E2)
+
+        # det = -1 * ray.direction.dot_product(other_vector=N)
+        # invdet = 1.0 / det
+
+        # A0 = ray.origin - self.vertices[0]
+        # DA0 = A0.cross_product(other_vector=ray.direction)
+
+        # u = E2.dot_product(DA0) * invdet
+        # v = -1 * E1.dot_product(DA0) * invdet
+        # t = A0.dot_product(N) * invdet
+        # if (det >= 1e-6 and t >= 0.0 and u >= 0.0 and v >= 0.0 and (u + v) <= 1.0):
+        #     return t
+
+        pVec = ray.direction.cross_product(self.v_vector)
+        det = self.u_vector.dot_product(pVec)
+
+        # ray and triangle are parallel if det is close to 0
+        if (math.fabs(det) < TrianglePrimitive.EPSILON):
+            return
+
+        backfacing = det < TrianglePrimitive.EPSILON
+
+        invDet = 1.0 / float(det)
+        tVec = ray.origin - self.vertices[0]
+        u = tVec.dot_product(pVec) * invDet
+        qVec = tVec.cross_product(self.u_vector)
+        v = ray.direction.dot_product(qVec) * invDet
+
+        # extra parens to keep clang-format happy...
+        if u < 0.0 or u > 1.0 or v < 0.0 or (u + v) > 1.0:
+            return
+
+        t = self.v_vector.dot_product(qVec) * invDet
+
+        if (t < TrianglePrimitive.EPSILON):
+            return
+
+        if not backfacing:
+            return t  # and normal -- if backfacting return t and negative normal
+        else:
+            return t
 
 
 class SpherePrimitive(Primitive):
@@ -151,10 +234,11 @@ CAMERA = Q_Vector3d(0, 0, -1.75)
 MAX_DEPTH = 5
 
 objects = [
-    SpherePrimitive(position=Q_Vector3d(x=2.5, y=0, z=15), ambient=Q_Vector3d(0.1, 0, 0.1), diffuse=Q_Vector3d(0.7, 0, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5, radius=3),
+    # SpherePrimitive(position=Q_Vector3d(x=2.5, y=0, z=15), ambient=Q_Vector3d(0.1, 0, 0.1), diffuse=Q_Vector3d(0.7, 0, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5, radius=3),
     SpherePrimitive(position=Q_Vector3d(x=-4.5, y=0, z=15), ambient=Q_Vector3d(0, 0.1, 0.1), diffuse=Q_Vector3d(0, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5, radius=2.0),
-    SpherePrimitive(position=Q_Vector3d(x=0, y=8, z=40), ambient=Q_Vector3d(0.1, 0.1, 0), diffuse=Q_Vector3d(0.7, 0.7, 0), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5, radius=8.0),
+    SpherePrimitive(position=Q_Vector3d(x=10, y=8, z=40), ambient=Q_Vector3d(0.1, 0.1, 0), diffuse=Q_Vector3d(0.7, 0.7, 0), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5, radius=8.0),  # Yellow
     SpherePrimitive(position=Q_Vector3d(x=0, y=-1000, z=15), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5, radius=990.0),  # Bottom plane
+    TrianglePrimitive(vertices=(Q_Vector3d(x=-5, y=5, z=20), Q_Vector3d(x=5, y=5, z=20), Q_Vector3d(x=0, y=10, z=20)), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5),
 ]
 
 lights = [
