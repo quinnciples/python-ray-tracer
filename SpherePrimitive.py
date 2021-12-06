@@ -31,6 +31,6 @@ class SpherePrimitive(Primitive):
             if t1 > 0 and t2 > 0:
                 distance = min(t1, t2)
                 intersection_point = ray.origin + ray.direction * distance
-                normal_to_surface = (intersection_point - self.position).normalized()
+                normal_to_surface = (intersection_point - self.position).normalized()  # What if we're inside the sphere?
                 return distance, normal_to_surface
         return None, None

@@ -31,7 +31,7 @@ scene = Scene(objects=objects, lights=lights)
 os.system('cls')
 print()
 
-scene.render(camera_position=CAMERA, width=WIDTH * SCALE, height=HEIGHT * SCALE, max_depth=MAX_DEPTH)
+scene.render(camera_position=CAMERA, width=WIDTH * SCALE, height=HEIGHT * SCALE, max_depth=MAX_DEPTH, anti_aliasing=False)
 
 # Test
 # ray_origin = np.array([0, 0, 0])
