@@ -1,3 +1,6 @@
+# TODO - Create Material
+#           Static variables for colors
+
 from QFunctions.Q_Functions import Q_Vector3d
 import os
 from Scene import Scene
