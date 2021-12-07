@@ -6,13 +6,14 @@ from QFunctions.Q_Functions import Q_Vector3d
 from Scene import Scene
 from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
+from PlanePrimitive import PlanePrimitive
 
 
 WIDTH = 64
 HEIGHT = 48
-SCALE = 5
+SCALE = 3
 CAMERA = Q_Vector3d(0, 0, -1.75)
-MAX_DEPTH = 10
+MAX_DEPTH = 3
 
 objects = [
     # Spheres
@@ -35,8 +36,10 @@ objects = [
     # TrianglePrimitive(vertices=(Q_Vector3d(x=-100, y=-10, z=-100), Q_Vector3d(x=-100, y=-10, z=1000), Q_Vector3d(x=100, y=-10, z=1000)), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5),  # Bottom plane
     # TrianglePrimitive(vertices=(Q_Vector3d(x=-100, y=-10, z=-100), Q_Vector3d(x=100, y=-10, z=-100), Q_Vector3d(x=100, y=-10, z=1000)), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5),  # Bottom plane
 
-    # Bottom cube
-    CubePrimitive(front_bottom_left=Q_Vector3d(x=-25, y=-55, z=-10), rear_top_right=Q_Vector3d(25, -5, 40), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=1.0),
+    # Bottom plane - cube
+    # CubePrimitive(front_bottom_left=Q_Vector3d(x=-25, y=-55, z=-10), rear_top_right=Q_Vector3d(25, -5, 40), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=1.0),
+    # Bottom plane - plane
+    PlanePrimitive(front_bottom_left=Q_Vector3d(x=-25, y=-5, z=-10), rear_top_right=Q_Vector3d(25, -5, 40), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=1.0),
 ]
 
 lights = [

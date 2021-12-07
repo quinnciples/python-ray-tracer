@@ -68,12 +68,10 @@ class TrianglePrimitive(Primitive):
         u = tVec.dot_product(pVec) * invDet
         qVec = tVec.cross_product(self.u_vector)
         v = ray.direction.dot_product(qVec) * invDet
-
         if u < 0.0 or u > 1.0 or v < 0.0 or (u + v) > 1.0:
             return None, None
 
         t = self.v_vector.dot_product(qVec) * invDet
-
         if (t < TrianglePrimitive.EPSILON):
             return None, None
 

@@ -6,6 +6,7 @@ import numpy as np
 import math
 from datetime import datetime as dt
 
+
 class Scene:
     def __init__(self, objects: list = [], lights: list = []):
         self.objects = objects
@@ -45,14 +46,14 @@ class Scene:
             ANTI_ALIASING_X = 1 / (2 * width)
             ANTI_ALIASING_Y = 1 / (2 * height)
             ANTI_ALIASING_OFFSETS = {'top-left': (-1 * ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     'top': (0, ANTI_ALIASING_Y),
+                                     # 'top': (0, ANTI_ALIASING_Y),
                                      'top-right': (ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     'left': (-1 * ANTI_ALIASING_X, 0),
-                                     'center': (0, 0),
-                                     'right': (ANTI_ALIASING_X, 0),
+                                     # 'left': (-1 * ANTI_ALIASING_X, 0),
+                                     # 'center': (0, 0),
+                                     # 'right': (ANTI_ALIASING_X, 0),
                                      'bottom-left': (-1 * ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y),
-                                     'bottom': (0, -1 * ANTI_ALIASING_Y),
-                                     'bottom-right': (ANTI_ALIASING_X, - 1 *ANTI_ALIASING_Y),}
+                                     # 'bottom': (0, -1 * ANTI_ALIASING_Y),
+                                     'bottom-right': (ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y)}
         else:
             ANTI_ALIASING_OFFSETS = {'center': (0, 0)}
 
