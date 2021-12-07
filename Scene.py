@@ -72,6 +72,7 @@ class Scene:
                     reflection = 1
 
                     for depth in range(max_depth):
+
                         ray = Ray(origin=origin, direction=direction)
                         nearest_object, distance_to_object, normal_to_surface = self.nearest_intersection(ray=ray)
 
@@ -115,6 +116,8 @@ class Scene:
 
                         # Handle reflection and continue
                         reflection *= nearest_object.reflection  # Can we say if reflection == 0 then break here?
+                        if reflection == 0:
+                            break
 
                         # Reset origination and direction to this point and continue recursively
                         origin = shifted_point

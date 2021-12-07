@@ -29,28 +29,28 @@ class CubePrimitive(Primitive):
 
         self.faces = (
             # front face
-            TrianglePrimitive((front_bottom_left, front + top + left, front + top + right)),
-            TrianglePrimitive((front_bottom_left, front + bottom + right, front + top + right)),
+            TrianglePrimitive((front_bottom_left, front + top + left, front + top + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front_bottom_left, front + bottom + right, front + top + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
             # top face
 
-            TrianglePrimitive((front + top + left, rear + top + left, rear_top_right)),
-            TrianglePrimitive((front + top + left, front + top + right, rear_top_right)),
+            TrianglePrimitive((front + top + left, rear + top + left, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front + top + left, front + top + right, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
 
             # bottom face
-            TrianglePrimitive((front_bottom_left, front + bottom + right, rear + bottom + right)),
-            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + bottom + right)),
+            TrianglePrimitive((front_bottom_left, front + bottom + right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
 
             # rear face
-            TrianglePrimitive((rear + top + left, rear_top_right, rear + bottom + right)),
-            TrianglePrimitive((rear + top + left, rear + bottom + left, rear + bottom + right)),
+            TrianglePrimitive((rear + top + left, rear_top_right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((rear + top + left, rear + bottom + left, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
 
             # left face
-            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + top + left)),
-            TrianglePrimitive((front_bottom_left, front + top + left, rear + top + left)),
+            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + top + left), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front_bottom_left, front + top + left, rear + top + left), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
 
             # right face
-            TrianglePrimitive((front + top + right, rear_top_right, rear + bottom + right)),
-            TrianglePrimitive((front + top + right, front + bottom + right, rear + bottom + right))
+            TrianglePrimitive((front + top + right, rear_top_right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front + top + right, front + bottom + right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection)
         )
 
     def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
@@ -58,11 +58,16 @@ class CubePrimitive(Primitive):
         # Track objects and distances that have collissions
         # Determine closest triangle
         # Return this distance and that normal's triangle
+        num_intersections = 0
         min_distance = math.inf
         normal_to_surface = None
         for triangle in self.faces:
             this_distance, this_normal_to_surface = triangle.intersect(ray=ray)
+            if this_distance:
+                num_intersections += 1
             if this_distance and this_distance < min_distance:
                 min_distance = this_distance
                 normal_to_surface = this_normal_to_surface
+            if num_intersections > 1:
+                break
         return (min_distance, normal_to_surface)
