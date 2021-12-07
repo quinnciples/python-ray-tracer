@@ -31,28 +31,28 @@ class Scene:
         SCREEN_DIMS = {'left': -1, 'top': 1 / SCREEN_RATIO, 'right': 1, 'bottom': -1 / SCREEN_RATIO}
         self.actual_max_depth = 0
 
-        ####################
-        #   Anti-aliasing
-        #   _____________
-        #   | X | X | X |
-        #   -------------
-        #   | X | X | X |
-        #   -------------
-        #   | X | X | X |
-        #   -------------
-        ####################
+        ###############################
+        #   Anti-aliasing offsets
+        #       _____________
+        #       | X | X | X |
+        #       -------------
+        #       | X | X | X |
+        #       -------------
+        #       | X | X | X |
+        #       -------------
+        ###############################
 
         if anti_aliasing:
             ANTI_ALIASING_X = 1 / (2 * width)
             ANTI_ALIASING_Y = 1 / (2 * height)
             ANTI_ALIASING_OFFSETS = {'top-left': (-1 * ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     # 'top': (0, ANTI_ALIASING_Y),
+                                     'top': (0, ANTI_ALIASING_Y),
                                      'top-right': (ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     # 'left': (-1 * ANTI_ALIASING_X, 0),
-                                     # 'center': (0, 0),
-                                     # 'right': (ANTI_ALIASING_X, 0),
+                                     'left': (-1 * ANTI_ALIASING_X, 0),
+                                     'center': (0, 0),
+                                     'right': (ANTI_ALIASING_X, 0),
                                      'bottom-left': (-1 * ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y),
-                                     # 'bottom': (0, -1 * ANTI_ALIASING_Y),
+                                     'bottom': (0, -1 * ANTI_ALIASING_Y),
                                      'bottom-right': (ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y)}
         else:
             ANTI_ALIASING_OFFSETS = {'center': (0, 0)}
