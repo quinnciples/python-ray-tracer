@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, "..")
 import pytest
 from QFunctions.Q_Functions import Q_Vector3d
 
