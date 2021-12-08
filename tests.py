@@ -25,7 +25,7 @@ def test_Q_Vector3d_negation():
     vector1 = Q_Vector3d(1, 2, 3)
     assert vector1 * -1 == Q_Vector3d(-1, -2, -3)
     assert Q_Vector3d.NORM_YAXIS() * -1 == Q_Vector3d(0, -1, 0)
-    assert -1 * vector1 == Q_Vector3d(-1, -2, -3)
+    assert -vector1 == Q_Vector3d(-1, -2, -3)
 
 
 def test_Q_Vector3d_dot_product():
@@ -55,14 +55,22 @@ def test_Q_Vector3d_reflected():
     assert incoming.reflected(surface_normal) == Q_Vector3d(1, 1, 0)
 
 
-list_of_tests = [x for x in dir() if 'test_' in x]
+if __name__ == '__main__':
+    list_of_tests = [x for x in dir() if 'test_' in x]
+    total_tests = 0
+    failed_tests = 0
+    for test in list_of_tests:
+        try:
+            print(test, '...', end='')
+            total_tests += 1
+            globals()[test]()
+            print(' PASSED')
+            
 
-for test in list_of_tests:
-    try:
-        print(test, '...', end='')
-        globals()[test]()
-        print(' PASSED')
+        except Exception as e:
+            failed_tests += 1
+            print(' !! FAILED !!')
+            print(str(e))
 
-    except Exception as e:
-        print(' !! FAILED !!')
-        print(str(e))
+    print()
+    print(f'{total_tests} tests run, {total_tests - failed_tests} tests passed, {failed_tests} tests failed.')
