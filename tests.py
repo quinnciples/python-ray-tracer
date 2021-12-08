@@ -53,3 +53,16 @@ def test_Q_Vector3d_reflected():
     incoming = Q_Vector3d(1, -1, 0)
     surface_normal = Q_Vector3d(0, 1, 0).normalized()
     assert incoming.reflected(surface_normal) == Q_Vector3d(1, 1, 0)
+
+
+list_of_tests = [x for x in dir() if 'test_' in x]
+
+for test in list_of_tests:
+    try:
+        print(test, '...', end='')
+        globals()[test]()
+        print(' PASSED')
+
+    except Exception as e:
+        print(' !! FAILED !!')
+        print(str(e))

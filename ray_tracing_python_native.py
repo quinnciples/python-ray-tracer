@@ -14,7 +14,7 @@ from PlanePrimitive import PlanePrimitive
 
 WIDTH = 64
 HEIGHT = 48
-SCALE = 5
+SCALE = 1
 CAMERA = Q_Vector3d(0, 0, -3.0)
 MAX_DEPTH = 3
 
