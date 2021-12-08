@@ -82,8 +82,6 @@ class Scene:
                             break
 
                         intersection_point = origin + direction * distance_to_object
-                        # Need to create a structure that can return the distance and normal from the object
-                        # normal_to_surface = (intersection_point - nearest_object.position).normalized() if type(nearest_object) == SpherePrimitive else nearest_object.face_normal * -1
                         shifted_point = intersection_point + normal_to_surface * 1e-5
                         direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()
 
@@ -110,7 +108,7 @@ class Scene:
                         # Specular lighting
                         intersection_to_camera = (camera_position - intersection_point).normalized()
                         H = (direction_from_intersection_to_light + intersection_to_camera).normalized()
-                        illumination += nearest_object.specular * self.lights[0]['color'] * (normal_to_surface.dot_product(H)) ** (nearest_object.shininess / 4)  # nearest_object['shininess']
+                        illumination += nearest_object.specular * self.lights[0]['color'] * (normal_to_surface.dot_product(H)) ** (nearest_object.shininess / 4)
 
                         # Reflection
                         color_value += illumination * reflection
