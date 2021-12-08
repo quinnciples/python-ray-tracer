@@ -15,8 +15,9 @@ from PlanePrimitive import PlanePrimitive
 WIDTH = 64
 HEIGHT = 48
 SCALE = 5
+ANTI_ALIASING = False
 CAMERA = Q_Vector3d(0, 0, -3.0)
-MAX_DEPTH = 3
+MAX_DEPTH = 5
 
 objects = [
     # Spheres
@@ -54,7 +55,7 @@ scene = Scene(objects=objects, lights=lights)
 
 print()
 
-scene.render(camera_position=CAMERA, width=WIDTH * SCALE, height=HEIGHT * SCALE, max_depth=MAX_DEPTH, anti_aliasing=False)
+scene.render(camera_position=CAMERA, width=WIDTH * SCALE, height=HEIGHT * SCALE, max_depth=MAX_DEPTH, anti_aliasing=ANTI_ALIASING)
 
 # Test
 # ray_origin = np.array([0, 0, 0])
