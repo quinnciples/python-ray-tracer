@@ -1,4 +1,3 @@
-import sys
 from QFunctions.Q_Functions import Q_Vector3d
 
 
@@ -65,7 +64,6 @@ if __name__ == '__main__':
             total_tests += 1
             globals()[test]()
             print(' PASSED')
-            
 
         except Exception as e:
             failed_tests += 1
