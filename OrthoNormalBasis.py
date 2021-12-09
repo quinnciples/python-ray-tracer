@@ -4,8 +4,9 @@ import math
 
 class OrthoNormalBasis:
     COINCIDENT = 0.9999
+    EPSILON = EPSILON = 0.000000001
 
-    def __init__(self, x: Q_Vector3d, y:Q_Vector3d, z:Q_Vector3d):
+    def __init__(self, x: Q_Vector3d, y: Q_Vector3d, z: Q_Vector3d):
         self.x = x
         self.y = y
         self.z = z
@@ -54,3 +55,18 @@ class OrthoNormalBasis:
             xx = Q_Vector3d.NORM_XAXIS().cross_product(z_vector).normalized()
         yy = z_vector.cross_product(xx).normalized()
         return OrthoNormalBasis(xx, yy, z_vector)
+
+    def transform(self, other_vector: Q_Vector3d):
+        return self.x * other_vector.x + self.y * other_vector.y + self.z * other_vector.z
+
+    @staticmethod
+    def cone_sample(direction: Q_Vector3d, cone_theta: float, u: float, v: float) -> Q_Vector3d:
+        if cone_theta < OrthoNormalBasis.EPSILON:
+            return direction
+
+        cone_theta = cone_theta * (1.0 - (2.0 * math.acos(u) / math.pi))
+        radius = math.sin(cone_theta)
+        z_scale = math.cos(cone_theta)
+        random_theta = v * 2 * math.pi
+        basis = OrthoNormalBasis.fromZ(direction)
+        return basis.transform(Q_Vector3d(math.cos(random_theta) * radius, math.sin(random_theta) * radius, z_scale)).normalized()
