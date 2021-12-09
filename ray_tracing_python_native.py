@@ -14,17 +14,17 @@ from PlanePrimitive import PlanePrimitive
 
 WIDTH = 64
 HEIGHT = 48
-SCALE = 5
+SCALE = 10
 ANTI_ALIASING = False
-CAMERA = Q_Vector3d(0, 0, -3.0)
-MAX_DEPTH = 5
+CAMERA = Q_Vector3d(0, 0.50, -1.5)
+MAX_DEPTH = 3
 
 objects = [
     # Spheres
-    SpherePrimitive(position=Q_Vector3d(x=3.5, y=0, z=50), ambient=Q_Vector3d(0.1, 0, 0.1), diffuse=Q_Vector3d(0.7, 0, 0.7), specular=Q_Vector3d(1.0, 0, 1.0), shininess=100, reflection=1.0, radius=3.0),  # Magenta right
-    SpherePrimitive(position=Q_Vector3d(x=-3.5, y=0, z=50), ambient=Q_Vector3d(0, 0.1, 0.1), diffuse=Q_Vector3d(0, 0.7, 0.7), specular=Q_Vector3d(0, 1.0, 1.0), shininess=100, reflection=1.0, radius=3.0),  # Cyan left
-    SpherePrimitive(position=Q_Vector3d(x=16, y=12, z=80), ambient=Q_Vector3d(0.1, 0.1, 0), diffuse=Q_Vector3d(0.7, 0.7, 0), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.75, radius=8.0),  # Yellow
-    SpherePrimitive(position=Q_Vector3d(x=-16, y=12, z=80), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.75, radius=8.0),  # White
+    SpherePrimitive(position=Q_Vector3d(x=5, y=0, z=15), ambient=Q_Vector3d(0.1, 0, 0.1), diffuse=Q_Vector3d(0.7, 0, 0.7), specular=Q_Vector3d(1.0, 0, 1.0), shininess=100, reflection=1.0, radius=3.0),  # Magenta right
+    SpherePrimitive(position=Q_Vector3d(x=-5, y=0, z=20), ambient=Q_Vector3d(0, 0.1, 0.1), diffuse=Q_Vector3d(0, 0.7, 0.7), specular=Q_Vector3d(0, 1.0, 1.0), shininess=100, reflection=1.0, radius=3.0),  # Cyan left
+    # SpherePrimitive(position=Q_Vector3d(x=16, y=12, z=80), ambient=Q_Vector3d(0.1, 0.1, 0), diffuse=Q_Vector3d(0.7, 0.7, 0), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.75, radius=8.0),  # Yellow
+    # SpherePrimitive(position=Q_Vector3d(x=-16, y=12, z=80), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.75, radius=8.0),  # White
 
     # TrianglePrimitive(vertices=(Q_Vector3d(x=-13, y=0, z=10), Q_Vector3d(x=-3, y=0, z=10), Q_Vector3d(x=-8, y=5, z=10)), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5),
     # TrianglePrimitive(vertices=(Q_Vector3d(x=-13, y=0, z=10), Q_Vector3d(x=-3, y=0, z=10), Q_Vector3d(x=-8, y=-5, z=10)), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.5),
@@ -43,12 +43,12 @@ objects = [
     # Bottom plane - cube
     # CubePrimitive(front_bottom_left=Q_Vector3d(x=-25, y=-55, z=-10), rear_top_right=Q_Vector3d(25, -5, 40), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=1.0),
     # Bottom plane - plane
-    PlanePrimitive(front_bottom_left=Q_Vector3d(x=-50, y=-3, z=-10), rear_top_right=Q_Vector3d(50, -3, 1000), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.1, 0.1, 0.1), specular=Q_Vector3d(0.3, 0.3, 0.3), shininess=0, reflection=1.0),
+    PlanePrimitive(front_bottom_left=Q_Vector3d(x=-100, y=-5, z=-10), rear_top_right=Q_Vector3d(100, -5, 1000), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.1, 0.1, 0.1), specular=Q_Vector3d(0.3, 0.3, 0.3), shininess=0, reflection=1.0),
     # PlanePrimitive(front_bottom_left=Q_Vector3d(x=-50, y=3, z=-10), rear_top_right=Q_Vector3d(50, 3, 1000), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.1, 0.1, 0.1), specular=Q_Vector3d(0.3, 0.3, 0.3), shininess=0, reflection=1.0),
 ]
 
 lights = [
-    {'position': Q_Vector3d(0, 25, 0), 'color': Q_Vector3d(0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0)}
+    {'position': Q_Vector3d(0, 25, 30), 'color': Q_Vector3d(0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0), 'type': PlanePrimitive(front_bottom_left=Q_Vector3d(x=0, y=25, z=30), rear_top_right=Q_Vector3d(x=5, y=25, z=35), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.1, 0.1, 0.1), specular=Q_Vector3d(0.3, 0.3, 0.3), shininess=0, reflection=1.0)}
 ]
 
 scene = Scene(objects=objects, lights=lights)

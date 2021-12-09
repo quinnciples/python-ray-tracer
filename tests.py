@@ -140,11 +140,4 @@ if __name__ == '__main__':
 
     print()
     print(f'{total_tests} tests run, {total_tests - failed_tests} tests passed, {failed_tests} tests failed.')
-
-    vector = Q_Vector3d(0, 0, 1)
-    pi_div = 16.0
-    for u_val in range(0, 101, 10):
-        cone_theta = math.pi / float(pi_div)
-        u = u_val / 100.0
-        result = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=u)
-        print(f'pi_div = PI / {pi_div}, u = {u_val} / 100.0, -- Starting Vector: {vector}, Result: {result}     ......... {cone_theta} {u}')
+    print()
