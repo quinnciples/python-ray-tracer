@@ -70,3 +70,16 @@ class OrthoNormalBasis:
         random_theta = v * 2 * math.pi
         basis = OrthoNormalBasis.fromZ(direction)
         return basis.transform(Q_Vector3d(math.cos(random_theta) * radius, math.sin(random_theta) * radius, z_scale)).normalized()
+
+
+if __name__ == '__main__':
+    vector = Q_Vector3d(0, 1, 0)
+    pi_div = 24.0
+    print(f'Starting Vector: {vector}')
+    for u_val in range(0, 101, 10):
+        cone_theta = math.pi / float(pi_div)
+        u = u_val / 100.0
+        result_u = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=0.0)
+        result_v = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=0.5)
+        result_x = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=1.0)
+        print(f'v=0: {str(result_u):<70}, v=0.5: {str(result_v):<70}, v=1: {str(result_x):<70}') 
