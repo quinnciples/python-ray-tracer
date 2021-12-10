@@ -1,11 +1,12 @@
-from OrthoNormalBasis import OrthoNormalBasis
-from QFunctions.Q_Functions import Q_Vector3d
-from QFunctions.Q_Functions import Q_map
-from Ray import Ray
-import matplotlib.pyplot as plt
-import numpy as np
 import math
 from datetime import datetime as dt
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from OrthoNormalBasis import OrthoNormalBasis
+from QFunctions.Q_Functions import Q_map, Q_Vector3d
+from Ray import Ray
 
 
 class Scene:
@@ -13,7 +14,7 @@ class Scene:
         self.objects = objects
         self.lights = lights
 
-    def nearest_intersection(self, ray: Ray):
+    def nearest_intersection(self, ray: Ray):  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
         min_distance = math.inf
         obj = None
         normal_to_surface = None
@@ -25,7 +26,7 @@ class Scene:
                 normal_to_surface = this_normal_to_surface
         return (obj, min_distance, normal_to_surface)
 
-    def render(self, camera_position: Q_Vector3d, width: int = 64, height: int = 64, max_depth: int = 1, anti_aliasing: bool = False):
+    def render(self, camera_position: Q_Vector3d, width: int = 64, height: int = 64, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1):
         start_time = dt.now()
         image = np.zeros((height, width, 3))
         SCREEN_RATIO = float(width) / float(height)
@@ -47,17 +48,19 @@ class Scene:
             ANTI_ALIASING_X = 1 / (2 * width)
             ANTI_ALIASING_Y = 1 / (2 * height)
             ANTI_ALIASING_OFFSETS = {'top-left': (-1 * ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     'top': (0, ANTI_ALIASING_Y),
+                                     #'top': (0, ANTI_ALIASING_Y),
                                      'top-right': (ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     'left': (-1 * ANTI_ALIASING_X, 0),
+                                     #'left': (-1 * ANTI_ALIASING_X, 0),
                                      'center': (0, 0),
-                                     'right': (ANTI_ALIASING_X, 0),
+                                     #'right': (ANTI_ALIASING_X, 0),
                                      'bottom-left': (-1 * ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y),
-                                     'bottom': (0, -1 * ANTI_ALIASING_Y),
+                                     #'bottom': (0, -1 * ANTI_ALIASING_Y),
                                      'bottom-right': (ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y)}
         else:
             ANTI_ALIASING_OFFSETS = {'center': (0, 0)}
 
+        print(f'Render started at {dt.now()}.')
+        print()
         for y in range(height):
             print(f'\r{y + 1}/{height}', end='')
             yy = Q_map(value=-y, lower_limit=-(height - 1), upper_limit=0, scaled_lower_limit=SCREEN_DIMS['bottom'], scaled_upper_limit=SCREEN_DIMS['top'])  # -((2 * y / float(HEIGHT - 1)) - 1)  # Q_map(value=-y, lower_limit=-(HEIGHT - 1), upper_limit=0, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (-y + (HEIGHT / 2.0)) / HEIGHT  # Need to make sure I did this right
@@ -93,7 +96,7 @@ class Scene:
 
                         # Lighting
                         # Fire a ray towards where the light source is
-                        NUMBER_OF_LIGHTING_SAMPLES = 1
+                        NUMBER_OF_LIGHTING_SAMPLES = lighting_samples
                         hit_light = False
                         cone_theta = math.pi / 56.0
                         illumination = Q_Vector3d(0, 0, 0)

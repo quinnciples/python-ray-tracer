@@ -19,7 +19,7 @@ class SpherePrimitive(Primitive):
 
     def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
         b = 2 * ray.direction.dot_product(other_vector=(ray.origin - self.position))
-        c = ((ray.origin - self.position).length ** 2) - (self.radius ** 2)
+        # c = ((ray.origin - self.position).length_squared) - (self.radius ** 2)
 
         # Test
         # ray_origin = np.array([ray.origin.x, ray.origin.y, ray.origin.z])
@@ -41,7 +41,7 @@ class SpherePrimitive(Primitive):
         op = self.position - ray.origin
         radiusSquared = self.radius ** 2
         b = op.dot_product(ray.direction)
-        determinant = b * b - (op.length * op.length) + radiusSquared
+        determinant = b * b - (op.length_squared) + radiusSquared
         if (determinant < 0):
             return None, None
 

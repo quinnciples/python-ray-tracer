@@ -14,10 +14,12 @@ from CubePrimitive import CubePrimitive
 
 WIDTH = 64
 HEIGHT = 48
-SCALE = 2
+SCALE = 5
 ANTI_ALIASING = False
 CAMERA = Q_Vector3d(0, 0.1, -1.5)
-MAX_DEPTH = 5
+MAX_DEPTH = 10
+NUMBER_OF_LIGHTING_SAMPLES = 1
+
 objects = [
     # Spheres
     SpherePrimitive(position=Q_Vector3d(x=5, y=-5, z=30), ambient=Q_Vector3d(0.1, 0, 0.1), diffuse=Q_Vector3d(0.7, 0, 0.7), specular=Q_Vector3d(1.0, 0, 1.0), shininess=100, reflection=1.0, radius=6.0),  # Magenta right
@@ -41,4 +43,4 @@ scene = Scene(objects=objects, lights=lights)
 
 print()
 
-scene.render(camera_position=CAMERA, width=WIDTH * SCALE, height=HEIGHT * SCALE, max_depth=MAX_DEPTH, anti_aliasing=ANTI_ALIASING)
+scene.render(camera_position=CAMERA, width=WIDTH * SCALE, height=HEIGHT * SCALE, max_depth=MAX_DEPTH, anti_aliasing=ANTI_ALIASING, lighting_samples=NUMBER_OF_LIGHTING_SAMPLES)

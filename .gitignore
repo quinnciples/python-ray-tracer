@@ -4,4 +4,4 @@ __pycache__
 settings.json
 log.txt
 time.txt
-image.png
+*.png
