@@ -82,4 +82,4 @@ if __name__ == '__main__':
         result_u = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=0.0)
         result_v = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=0.5)
         result_x = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=1.0)
-        print(f'v=0: {str(result_u):<70}, v=0.5: {str(result_v):<70}, v=1: {str(result_x):<70}')  #     ......... PI / {pi_div}, {u_val} / 100')
+        print(f'v=0: {str(result_u):<70}, v=0.5: {str(result_v):<70}, v=1: {str(result_x):<70}') 

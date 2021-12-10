@@ -1,3 +1,4 @@
+from OrthoNormalBasis import OrthoNormalBasis
 from QFunctions.Q_Functions import Q_Vector3d
 from QFunctions.Q_Functions import Q_map
 from Ray import Ray
@@ -70,7 +71,7 @@ class Scene:
                     origin = camera_position
                     direction = (pixel - origin).normalized()
 
-                    reflection = 1
+                    reflection = 1.0
 
                     for depth in range(max_depth):
 
@@ -81,37 +82,55 @@ class Scene:
                         if nearest_object is None:
                             break
 
+                        # Did we hit a light?
+                        # if nearest_object.emission != Q_Vector3d(0, 0, 0):
+                        #     color_value = nearest_object.emission  # * reflection?
+                        #     break
+
                         intersection_point = origin + direction * distance_to_object
                         shifted_point = intersection_point + normal_to_surface * 1e-5
                         direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()
 
-                        ray = Ray(origin=shifted_point, direction=direction_from_intersection_to_light)
-                        _, distance_to_object, __ = self.nearest_intersection(ray=ray)
-
-                        distance_to_light = (self.lights[0]['position'] - intersection_point).length
-                        is_shadowed = distance_to_object < distance_to_light
-
-                        # Is the point we hit able to see a light?
-                        if is_shadowed:
-                            break
-
                         # Lighting
+                        # Fire a ray towards where the light source is
+                        NUMBER_OF_LIGHTING_SAMPLES = 1
+                        hit_light = False
+                        cone_theta = math.pi / 56.0
                         illumination = Q_Vector3d(0, 0, 0)
+                        for u in range(NUMBER_OF_LIGHTING_SAMPLES):
+                            for v in range(NUMBER_OF_LIGHTING_SAMPLES):
+                                wobbled_direction = OrthoNormalBasis.cone_sample(direction=direction_from_intersection_to_light, cone_theta=cone_theta, u=u / float(NUMBER_OF_LIGHTING_SAMPLES), v=v / float(NUMBER_OF_LIGHTING_SAMPLES))
+                                # ray = Ray(origin=shifted_point, direction=direction_from_intersection_to_light)
+                                ray = Ray(origin=shifted_point, direction=wobbled_direction)
+                                nearest_light, distance_to_light, __ = self.nearest_intersection(ray=ray)
 
-                        # Ambient lighting
-                        illumination += nearest_object.ambient * self.lights[0]['color']
+                                # distance_to_light = (self.lights[0]['position'] - intersection_point).length
+                                is_shadowed = nearest_light is None or nearest_light.emission == Q_Vector3d(0, 0, 0)
 
-                        # Diffuse lighting
-                        intensity = math.fabs(direction_from_intersection_to_light.dot_product(normal_to_surface))
-                        illumination += nearest_object.diffuse * self.lights[0]['color'] * intensity
+                                # Is the point we hit able to see a light?
+                                if is_shadowed:
+                                    continue
+                                hit_light = True
 
-                        # Specular lighting
-                        intersection_to_camera = (camera_position - intersection_point).normalized()
-                        H = (direction_from_intersection_to_light + intersection_to_camera).normalized()
-                        illumination += nearest_object.specular * self.lights[0]['color'] * (normal_to_surface.dot_product(H)) ** (nearest_object.shininess / 4)
+                                # Ambient lighting
+                                illumination += nearest_object.ambient * nearest_light.emission
+
+                                # Diffuse lighting
+                                intensity = math.fabs(wobbled_direction.dot_product(normal_to_surface))
+                                illumination += nearest_object.diffuse * nearest_light.emission * intensity
+
+                                # Specular lighting
+                                intersection_to_camera = (camera_position - intersection_point).normalized()
+                                H = (wobbled_direction + intersection_to_camera).normalized()
+                                illumination += nearest_object.specular * nearest_light.emission * (normal_to_surface.dot_product(H)) ** (nearest_object.shininess / 4)
+
+                        illumination = illumination * (1 / (NUMBER_OF_LIGHTING_SAMPLES ** 2))
 
                         # Reflection
                         color_value += illumination * reflection
+
+                        if not hit_light:
+                            break
 
                         # Handle reflection and continue
                         reflection *= nearest_object.reflection  # Can we say if reflection == 0 then break here?
