@@ -64,7 +64,7 @@ class OrthoNormalBasis:
         if cone_theta < OrthoNormalBasis.EPSILON:
             return direction
 
-        cone_theta = cone_theta * (1.0 - (2.0 * math.acos(u) / math.pi))
+        cone_theta *= 1.0 - (2.0 * math.acos(u) / math.pi)
         radius = math.sin(cone_theta)
         z_scale = math.cos(cone_theta)
         random_theta = v * 2 * math.pi
@@ -80,6 +80,6 @@ if __name__ == '__main__':
         cone_theta = math.pi / float(pi_div)
         u = u_val / 100.0
         result_u = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=0.0)
-        result_v = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=0.5)
+        result_v = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=0.25)
         result_x = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=1.0)
-        print(f'v=0: {str(result_u):<70}, v=0.5: {str(result_v):<70}, v=1: {str(result_x):<70}') 
+        print(f'v=0: {str(result_u):<70}, v=0.5: {str(result_v):<70}, v=1: {str(result_x):<70}')
