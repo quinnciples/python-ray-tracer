@@ -25,8 +25,8 @@ class PlanePrimitive(Primitive):
 
         self.faces = (
             # top face
-            TrianglePrimitive((front + bottom + left, rear + top + left, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
-            TrianglePrimitive((front + bottom + left, front + bottom + right, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front + bottom + left, rear + top + left, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((front + bottom + left, front + bottom + right, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
         )
 
     def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:

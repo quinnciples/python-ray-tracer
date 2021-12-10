@@ -12,9 +12,9 @@ class SpherePrimitive(Primitive):
 
     EPSILON = 1e-5  # 0.000000001
 
-    def __init__(self, position: Q_Vector3d, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float, radius: float):
+    def __init__(self, position: Q_Vector3d, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float, radius: float, emission: Q_Vector3d = Q_Vector3d(0, 0, 0)):
         # self.center = center
-        Primitive.__init__(self, position=position, ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection)
+        Primitive.__init__(self, position=position, ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
         self.radius = float(radius)
 
     def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:

@@ -8,8 +8,8 @@ class TrianglePrimitive(Primitive):
 
     EPSILON = 0.000000001
 
-    def __init__(self, vertices: tuple, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float):
-        Primitive.__init__(self, position=Q_Vector3d(0, 0, 0), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection)
+    def __init__(self, vertices: tuple, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float, emission: Q_Vector3d = Q_Vector3d(0, 0, 0)):
+        Primitive.__init__(self, position=Q_Vector3d(0, 0, 0), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
         self.vertices = vertices
         self.position = self._position
 

@@ -29,28 +29,28 @@ class CubePrimitive(Primitive):
 
         self.faces = (
             # front face
-            TrianglePrimitive((front_bottom_left, front + top + left, front + top + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
-            TrianglePrimitive((front_bottom_left, front + bottom + right, front + top + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front_bottom_left, front + top + left, front + top + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((front_bottom_left, front + bottom + right, front + top + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
             # top face
 
-            TrianglePrimitive((front + top + left, rear + top + left, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
-            TrianglePrimitive((front + top + left, front + top + right, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front + top + left, rear + top + left, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((front + top + left, front + top + right, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
 
             # bottom face
-            TrianglePrimitive((front_bottom_left, front + bottom + right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
-            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front_bottom_left, front + bottom + right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
 
             # rear face
-            TrianglePrimitive((rear + top + left, rear_top_right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
-            TrianglePrimitive((rear + top + left, rear + bottom + left, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((rear + top + left, rear_top_right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((rear + top + left, rear + bottom + left, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
 
             # left face
-            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + top + left), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
-            TrianglePrimitive((front_bottom_left, front + top + left, rear + top + left), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
+            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + top + left), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((front_bottom_left, front + top + left, rear + top + left), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
 
             # right face
-            TrianglePrimitive((front + top + right, rear_top_right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection),
-            TrianglePrimitive((front + top + right, front + bottom + right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection)
+            TrianglePrimitive((front + top + right, rear_top_right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((front + top + right, front + bottom + right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
         )
 
     def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:

@@ -49,7 +49,10 @@ class OrthoNormalBasis:
 
     @staticmethod
     def fromZ(z_vector: Q_Vector3d):
-        if math.fabs(z_vector.dot_product(Q_Vector3d.NORM_XAXIS())) > OrthoNormalBasis.COINCIDENT:
+        if (
+            math.fabs(z_vector.dot_product(Q_Vector3d.NORM_XAXIS()))
+            > OrthoNormalBasis.COINCIDENT
+        ):
             xx = Q_Vector3d.NORM_YAXIS().cross_product(z_vector).normalized()
         else:
             xx = Q_Vector3d.NORM_XAXIS().cross_product(z_vector).normalized()
@@ -57,10 +60,14 @@ class OrthoNormalBasis:
         return OrthoNormalBasis(xx, yy, z_vector)
 
     def transform(self, other_vector: Q_Vector3d):
-        return self.x * other_vector.x + self.y * other_vector.y + self.z * other_vector.z
+        return (
+            self.x * other_vector.x + self.y * other_vector.y + self.z * other_vector.z
+        )
 
     @staticmethod
-    def cone_sample(direction: Q_Vector3d, cone_theta: float, u: float, v: float) -> Q_Vector3d:
+    def cone_sample(
+        direction: Q_Vector3d, cone_theta: float, u: float, v: float
+    ) -> Q_Vector3d:
         if cone_theta < OrthoNormalBasis.EPSILON:
             return direction
 
@@ -69,17 +76,31 @@ class OrthoNormalBasis:
         z_scale = math.cos(cone_theta)
         random_theta = v * 2 * math.pi
         basis = OrthoNormalBasis.fromZ(direction)
-        return basis.transform(Q_Vector3d(math.cos(random_theta) * radius, math.sin(random_theta) * radius, z_scale)).normalized()
+        return basis.transform(
+            Q_Vector3d(
+                math.cos(random_theta) * radius,
+                math.sin(random_theta) * radius,
+                z_scale
+            )
+        ).normalized()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     vector = Q_Vector3d(0, 1, 0)
     pi_div = 24.0
-    print(f'Starting Vector: {vector}')
+    print(f"Starting Vector: {vector}")
     for u_val in range(0, 101, 10):
         cone_theta = math.pi / float(pi_div)
         u = u_val / 100.0
-        result_u = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=0.0)
-        result_v = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=0.25)
-        result_x = OrthoNormalBasis.cone_sample(direction=vector, cone_theta=cone_theta, u=u, v=1.0)
-        print(f'v=0: {str(result_u):<70}, v=0.5: {str(result_v):<70}, v=1: {str(result_x):<70}')
+        result_u = OrthoNormalBasis.cone_sample(
+            direction=vector, cone_theta=cone_theta, u=u, v=0.0
+        )
+        result_v = OrthoNormalBasis.cone_sample(
+            direction=vector, cone_theta=cone_theta, u=u, v=0.25
+        )
+        result_x = OrthoNormalBasis.cone_sample(
+            direction=vector, cone_theta=cone_theta, u=u, v=1.0
+        )
+        print(
+            f"v=0: {str(result_u):<70}, v=0.5: {str(result_v):<70}, v=1: {str(result_x):<70}"
+        )
