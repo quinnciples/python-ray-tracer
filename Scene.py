@@ -1,6 +1,7 @@
 import math
 from datetime import datetime as dt
 from multiprocessing import Process, Manager
+import multiprocessing
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,43 +28,23 @@ class Scene:
                 normal_to_surface = this_normal_to_surface
         return (obj, min_distance, normal_to_surface)
 
-    def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, num_processes: int = 1):
-        L = []
-
-        with Manager() as manager:
-            L = manager.list()
-            processes = []
-
-            for _ in range(num_processes):
-                p = Process(target=self.render, args=(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, L, {'start': _ * int(height / num_processes), 'end': _ * int(height / num_processes) + int(height / num_processes)}))  # Passing the list
-                processes.append(p)
-
-            start_time = dt.now()
-            for p in processes:
-                p.start()
-
-            for p in processes:
-                p.join()
-
-            print(f'Render completed in {dt.now() - start_time}.')
-
-            L = list(L)
-            print('Saving image...')
-            image = np.zeros((height, width, 3))
-            for pixel in L:
-                y = pixel[0][0]
-                x = pixel[0][1]
-                image[y, x] = pixel[1]
-            plt.imsave('image2.png', image)
-
+    def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, num_processes: int = 10):
+        pool = multiprocessing.Pool(processes=4)
+        arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, None, {'start': _ * int(height / num_processes), 'end': _ * int(height / num_processes) + int(height / num_processes)}) for _ in range(num_processes)]
+        start_time = dt.now()
+        output = [pool.apply_async(self.render, args=(*arg,)) for arg in arguments]
+        results = [o.get() for o in output]
+        print(f'Render completed in {dt.now() - start_time}.')
+        print('Saving image...')
+        image = np.zeros((height, width, 3))
+        for result in results:
+            image += result
+        plt.imsave('image.png', image)
 
     def render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, shared_list=None, row_range: dict = {}):
-        print(row_range)
-        start_time = dt.now()
         image = np.zeros((height, width, 3))
         SCREEN_RATIO = float(width) / float(height)
         SCREEN_DIMS = {'left': -1, 'top': 1 / SCREEN_RATIO, 'right': 1, 'bottom': -1 / SCREEN_RATIO}
-        self.actual_max_depth = 0
 
         ###############################
         #   Anti-aliasing offsets
@@ -182,14 +163,8 @@ class Scene:
                         origin = shifted_point
                         direction = direction.reflected(other_vector=normal_to_surface)
 
-                    self.actual_max_depth = max(self.actual_max_depth, depth + 1)
-
                 image[y, x] = (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()  # nearest_object['color'] if nearest_object else (0, 0, 0)
 
-                if shared_list is not None:
-                    shared_list.append([(y, x), (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()])
-
-        # plt.imsave('image.png', image)
-        print()
-        print(f'Maximum depth allowed: {max_depth} -- Actual depth reached: {self.actual_max_depth}')
-        print(f'Render completed in {dt.now() - start_time}.')
+        if shared_list is not None:
+            shared_list.append(image)
+        return image
