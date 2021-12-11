@@ -1,7 +1,6 @@
 import math
 from datetime import datetime as dt
-from multiprocessing import Process, Manager
-import multiprocessing
+from multiprocessing import Pool
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,10 +27,13 @@ class Scene:
                 normal_to_surface = this_normal_to_surface
         return (obj, min_distance, normal_to_surface)
 
-    def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, num_processes: int = 10):
-        pool = multiprocessing.Pool(processes=4)
-        arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, None, {'start': _ * int(height / num_processes), 'end': _ * int(height / num_processes) + int(height / num_processes)}) for _ in range(num_processes)]
+    def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1):
+        num_chunks = 10
+        pool = Pool(processes=4)
+        arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': _ * int(height / num_chunks), 'end': _ * int(height / num_chunks) + int(height / num_chunks)}) for _ in range(num_chunks)]
         start_time = dt.now()
+        print(f'Render started at {start_time}.')
+        print()
         output = [pool.apply_async(self.render, args=(*arg,)) for arg in arguments]
         results = [o.get() for o in output]
         print(f'Render completed in {dt.now() - start_time}.')
@@ -41,7 +43,7 @@ class Scene:
             image += result
         plt.imsave('image.png', image)
 
-    def render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, shared_list=None, row_range: dict = {}):
+    def render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}):
         image = np.zeros((height, width, 3))
         SCREEN_RATIO = float(width) / float(height)
         SCREEN_DIMS = {'left': -1, 'top': 1 / SCREEN_RATIO, 'right': 1, 'bottom': -1 / SCREEN_RATIO}
@@ -61,19 +63,17 @@ class Scene:
             ANTI_ALIASING_X = 1 / (2 * width)
             ANTI_ALIASING_Y = 1 / (2 * height)
             ANTI_ALIASING_OFFSETS = {'top-left': (-1 * ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     #'top': (0, ANTI_ALIASING_Y),
+                                     'top': (0, ANTI_ALIASING_Y),
                                      'top-right': (ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     #'left': (-1 * ANTI_ALIASING_X, 0),
+                                     'left': (-1 * ANTI_ALIASING_X, 0),
                                      'center': (0, 0),
-                                     #'right': (ANTI_ALIASING_X, 0),
+                                     'right': (ANTI_ALIASING_X, 0),
                                      'bottom-left': (-1 * ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y),
-                                     #'bottom': (0, -1 * ANTI_ALIASING_Y),
+                                     'bottom': (0, -1 * ANTI_ALIASING_Y),
                                      'bottom-right': (ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y)}
         else:
             ANTI_ALIASING_OFFSETS = {'center': (0, 0)}
 
-        print(f'Render started at {dt.now()}.')
-        print()
         if not row_range:
             starting_row = 0
             ending_row = height
@@ -155,7 +155,7 @@ class Scene:
                             break
 
                         # Handle reflection and continue
-                        reflection *= nearest_object.reflection  # Can we say if reflection == 0 then break here?
+                        reflection *= nearest_object.reflection
                         if reflection == 0:
                             break
 
@@ -163,8 +163,6 @@ class Scene:
                         origin = shifted_point
                         direction = direction.reflected(other_vector=normal_to_surface)
 
-                image[y, x] = (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()  # nearest_object['color'] if nearest_object else (0, 0, 0)
+                image[y, x] = (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()
 
-        if shared_list is not None:
-            shared_list.append(image)
         return image

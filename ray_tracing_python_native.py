@@ -16,7 +16,7 @@ from CubePrimitive import CubePrimitive
 if __name__ == '__main__':
     WIDTH = 64
     HEIGHT = 48
-    SCALE = 10
+    SCALE = 5
     ANTI_ALIASING = False
     CAMERA = Q_Vector3d(0, 0.1, -1.5)
     MAX_DEPTH = 10
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         SpherePrimitive(position=Q_Vector3d(x=16, y=12, z=50), ambient=Q_Vector3d(0.1, 0.1, 0), diffuse=Q_Vector3d(0.7, 0.7, 0), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.3, radius=8.0),  # Yellow
         SpherePrimitive(position=Q_Vector3d(x=-10, y=12, z=40), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.7, 0.7, 0.7), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0.4, radius=8.0),  # White
 
-        # Bottom plane - plane
+        # Bottom plane
         PlanePrimitive(front_bottom_left=Q_Vector3d(x=-500, y=-15, z=-10), rear_top_right=Q_Vector3d(500, -15, 250), ambient=Q_Vector3d(0.1, 0.1, 0.1), diffuse=Q_Vector3d(0.1, 0.1, 0.1), specular=Q_Vector3d(0.3, 0.3, 0.3), shininess=0, reflection=0),
 
         # Light
@@ -38,11 +38,8 @@ if __name__ == '__main__':
     ]
 
     lights = [
-        {'position': Q_Vector3d(5, 25, 10)}  # 'color': Q_Vector3d(0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0)}
+        {'position': Q_Vector3d(5, 25, 10)}
     ]
 
     scene = Scene(objects=objects, lights=lights)
-
-    print()
-
     scene.multi_render(camera_position=CAMERA, width=WIDTH * SCALE, height=HEIGHT * SCALE, max_depth=MAX_DEPTH, anti_aliasing=ANTI_ALIASING, lighting_samples=NUMBER_OF_LIGHTING_SAMPLES)
