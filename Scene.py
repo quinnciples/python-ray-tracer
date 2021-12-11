@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from OrthoNormalBasis import OrthoNormalBasis
-from QFunctions.Q_Functions import Q_map, Q_Vector3d
+from QFunctions.Q_Functions import Q_map, Q_Vector3d, Q_chunks
 from Ray import Ray
 
 
@@ -30,7 +30,8 @@ class Scene:
     def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1):
         num_chunks = 10
         pool = Pool(processes=4)
-        arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': _ * int(height / num_chunks), 'end': _ * int(height / num_chunks) + int(height / num_chunks)}) for _ in range(num_chunks)]
+        # arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': _ * int(height / num_chunks), 'end': _ * int(height / num_chunks) + int(height / num_chunks)}) for _ in range(num_chunks)]
+        arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_chunks(number_of_items=height,number_of_chunks=num_chunks)]
         start_time = dt.now()
         print(f'Render started at {start_time}.')
         print()

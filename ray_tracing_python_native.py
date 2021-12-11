@@ -16,7 +16,7 @@ from CubePrimitive import CubePrimitive
 if __name__ == '__main__':
     WIDTH = 64
     HEIGHT = 48
-    SCALE = 5
+    SCALE = 10
     ANTI_ALIASING = False
     CAMERA = Q_Vector3d(0, 0.1, -1.5)
     MAX_DEPTH = 10
