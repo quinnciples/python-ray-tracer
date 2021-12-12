@@ -1,11 +1,13 @@
 import math
 from datetime import datetime as dt
+from multiprocessing import Pool, cpu_count
+import multiprocessing
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from OrthoNormalBasis import OrthoNormalBasis
-from QFunctions.Q_Functions import Q_map, Q_Vector3d
+from QFunctions.Q_Functions import Q_buckets, Q_map, Q_Vector3d, Q_buckets
 from Ray import Ray
 
 
@@ -26,12 +28,28 @@ class Scene:
                 normal_to_surface = this_normal_to_surface
         return (obj, min_distance, normal_to_surface)
 
-    def render(self, camera_position: Q_Vector3d, width: int = 64, height: int = 64, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1):
+    def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
+        number_of_buckets = 10
+        cores_to_use = cores_to_use if cores_to_use != 0 else multiprocessing.cpu_count()
+        pool = Pool(processes=cores_to_use)
+        # arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': _ * int(height / num_chunks), 'end': _ * int(height / num_chunks) + int(height / num_chunks)}) for _ in range(num_chunks)]
+        arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
         start_time = dt.now()
+        print(f'Render started @ {width}x{height}x{lighting_samples} {"with anti aliasing " if anti_aliasing else ""}using {cores_to_use} cores at {start_time}.')
+        print()
+        output = [pool.apply_async(self.render, args=(*arg,)) for arg in arguments]
+        results = [o.get() for o in output]
+        print(f'Render completed in {dt.now() - start_time}.')
+        print('Saving image...')
+        image = np.zeros((height, width, 3))
+        for result in results:
+            image += result
+        plt.imsave('image.png', image)
+
+    def render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}):
         image = np.zeros((height, width, 3))
         SCREEN_RATIO = float(width) / float(height)
         SCREEN_DIMS = {'left': -1, 'top': 1 / SCREEN_RATIO, 'right': 1, 'bottom': -1 / SCREEN_RATIO}
-        self.actual_max_depth = 0
 
         ###############################
         #   Anti-aliasing offsets
@@ -48,21 +66,25 @@ class Scene:
             ANTI_ALIASING_X = 1 / (2 * width)
             ANTI_ALIASING_Y = 1 / (2 * height)
             ANTI_ALIASING_OFFSETS = {'top-left': (-1 * ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     #'top': (0, ANTI_ALIASING_Y),
+                                     'top': (0, ANTI_ALIASING_Y),
                                      'top-right': (ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     #'left': (-1 * ANTI_ALIASING_X, 0),
+                                     'left': (-1 * ANTI_ALIASING_X, 0),
                                      'center': (0, 0),
-                                     #'right': (ANTI_ALIASING_X, 0),
+                                     'right': (ANTI_ALIASING_X, 0),
                                      'bottom-left': (-1 * ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y),
-                                     #'bottom': (0, -1 * ANTI_ALIASING_Y),
+                                     'bottom': (0, -1 * ANTI_ALIASING_Y),
                                      'bottom-right': (ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y)}
         else:
             ANTI_ALIASING_OFFSETS = {'center': (0, 0)}
 
-        print(f'Render started at {dt.now()}.')
-        print()
-        for y in range(height):
-            print(f'\r{y + 1}/{height}', end='')
+        if not row_range:
+            starting_row = 0
+            ending_row = height
+        else:
+            starting_row = row_range['start']
+            ending_row = row_range['end']
+        for y in range(starting_row, ending_row):
+            print(f'{y + 1}/{ending_row}', end='\n')
             yy = Q_map(value=-y, lower_limit=-(height - 1), upper_limit=0, scaled_lower_limit=SCREEN_DIMS['bottom'], scaled_upper_limit=SCREEN_DIMS['top'])  # -((2 * y / float(HEIGHT - 1)) - 1)  # Q_map(value=-y, lower_limit=-(HEIGHT - 1), upper_limit=0, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (-y + (HEIGHT / 2.0)) / HEIGHT  # Need to make sure I did this right
             for x in range(width):
                 xx = Q_map(value=x, lower_limit=0, upper_limit=width - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (2 * x / float(WIDTH - 1)) - 1  # Q_map(value=x, lower_limit=0, upper_limit=WIDTH - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (x - (WIDTH / 2.0)) / WIDTH
@@ -102,7 +124,7 @@ class Scene:
                         illumination = Q_Vector3d(0, 0, 0)
                         for u in range(NUMBER_OF_LIGHTING_SAMPLES):
                             for v in range(NUMBER_OF_LIGHTING_SAMPLES):
-                                wobbled_direction = OrthoNormalBasis.cone_sample(direction=direction_from_intersection_to_light, cone_theta=cone_theta, u=u / float(NUMBER_OF_LIGHTING_SAMPLES), v=v / float(NUMBER_OF_LIGHTING_SAMPLES))
+                                wobbled_direction = OrthoNormalBasis.cone_sample(direction=direction_from_intersection_to_light, cone_theta=cone_theta, u=u / NUMBER_OF_LIGHTING_SAMPLES, v=v / NUMBER_OF_LIGHTING_SAMPLES)
                                 # ray = Ray(origin=shifted_point, direction=direction_from_intersection_to_light)
                                 ray = Ray(origin=shifted_point, direction=wobbled_direction)
                                 nearest_light, distance_to_light, __ = self.nearest_intersection(ray=ray)
@@ -136,7 +158,7 @@ class Scene:
                             break
 
                         # Handle reflection and continue
-                        reflection *= nearest_object.reflection  # Can we say if reflection == 0 then break here?
+                        reflection *= nearest_object.reflection
                         if reflection == 0:
                             break
 
@@ -144,11 +166,6 @@ class Scene:
                         origin = shifted_point
                         direction = direction.reflected(other_vector=normal_to_surface)
 
-                    self.actual_max_depth = max(self.actual_max_depth, depth + 1)
+                image[y, x] = (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()
 
-                image[y, x] = (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()  # nearest_object['color'] if nearest_object else (0, 0, 0)
-
-        plt.imsave('image.png', image)
-        print()
-        print(f'Maximum depth allowed: {max_depth} -- Actual depth reached: {self.actual_max_depth}')
-        print(f'Render completed in {dt.now() - start_time}.')
+        return image
