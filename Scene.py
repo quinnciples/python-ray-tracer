@@ -1,12 +1,13 @@
 import math
 from datetime import datetime as dt
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count
+import multiprocessing
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from OrthoNormalBasis import OrthoNormalBasis
-from QFunctions.Q_Functions import Q_map, Q_Vector3d, Q_chunks
+from QFunctions.Q_Functions import Q_buckets, Q_map, Q_Vector3d, Q_buckets
 from Ray import Ray
 
 
@@ -27,13 +28,14 @@ class Scene:
                 normal_to_surface = this_normal_to_surface
         return (obj, min_distance, normal_to_surface)
 
-    def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1):
-        num_chunks = 10
-        pool = Pool(processes=4)
+    def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
+        number_of_buckets = 10
+        cores_to_use = cores_to_use if cores_to_use != 0 else multiprocessing.cpu_count()
+        pool = Pool(processes=cores_to_use)
         # arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': _ * int(height / num_chunks), 'end': _ * int(height / num_chunks) + int(height / num_chunks)}) for _ in range(num_chunks)]
-        arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_chunks(number_of_items=height,number_of_chunks=num_chunks)]
+        arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
         start_time = dt.now()
-        print(f'Render started at {start_time}.')
+        print(f'Render started @ {width}x{height}x{lighting_samples} {"with anti aliasing " if anti_aliasing else ""}using {cores_to_use} cores at {start_time}.')
         print()
         output = [pool.apply_async(self.render, args=(*arg,)) for arg in arguments]
         results = [o.get() for o in output]

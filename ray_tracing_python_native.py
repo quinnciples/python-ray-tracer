@@ -1,4 +1,5 @@
 # References
+# https://www.realtimerendering.com/raytracing
 # https://github.com/OmarAflak/RayTracer-CPP
 # https://www.realtimerendering.com/raytracing/Ray%20Tracing_%20the%20Rest%20of%20Your%20Life.pdf
 # https://github.com/mattgodbolt/pt-three-ways
@@ -6,21 +7,38 @@
 # TODO - Create Material
 #           Static variables for colors
 
+import argparse
+
+from CubePrimitive import CubePrimitive
+from PlanePrimitive import PlanePrimitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Scene import Scene
 from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
-from PlanePrimitive import PlanePrimitive
-from CubePrimitive import CubePrimitive
 
 if __name__ == '__main__':
-    WIDTH = 64
-    HEIGHT = 48
-    SCALE = 10
-    ANTI_ALIASING = False
+    # Initialize parser
+    parser = argparse.ArgumentParser()
+
+    # Adding optional argument
+    parser.add_argument("--width", help="Width", type=int)
+    parser.add_argument("--height", help="Height", type=int)
+    parser.add_argument("--depth", help="Maximum Depth", type=int)
+    parser.add_argument("--samples", help="Number of Lighting Samples", type=int)
+    parser.add_argument("--anti-aliasing-enabled", help="Use Anti Aliasing", action="store_true")
+    parser.add_argument("--cores", help="Number of Cores to Use", type=int)
+
+    # Read arguments from command line
+    arguments = parser.parse_args()
+
+    WIDTH = arguments.width
+    HEIGHT = arguments.height
+    SCALE = 1
+    ANTI_ALIASING = arguments.anti_aliasing_enabled
     CAMERA = Q_Vector3d(0, 0.1, -1.5)
-    MAX_DEPTH = 10
-    NUMBER_OF_LIGHTING_SAMPLES = 5
+    MAX_DEPTH = arguments.depth
+    NUMBER_OF_LIGHTING_SAMPLES = arguments.samples
+    CORES_TO_USE = arguments.cores
 
     objects = [
         # Spheres
@@ -42,4 +60,4 @@ if __name__ == '__main__':
     ]
 
     scene = Scene(objects=objects, lights=lights)
-    scene.multi_render(camera_position=CAMERA, width=WIDTH * SCALE, height=HEIGHT * SCALE, max_depth=MAX_DEPTH, anti_aliasing=ANTI_ALIASING, lighting_samples=NUMBER_OF_LIGHTING_SAMPLES)
+    scene.multi_render(camera_position=CAMERA, width=WIDTH * SCALE, height=HEIGHT * SCALE, max_depth=MAX_DEPTH, anti_aliasing=ANTI_ALIASING, lighting_samples=NUMBER_OF_LIGHTING_SAMPLES, cores_to_use=CORES_TO_USE)
