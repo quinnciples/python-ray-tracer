@@ -1,7 +1,8 @@
-from QFunctions.Q_Functions import Q_Vector3d
+from QFunctions.Q_Functions import Q_Vector3d, Q_buckets
 from OrthoNormalBasis import OrthoNormalBasis
 import math
 import numpy as np
+
 
 def test_Q_Vector3d_constructor():
     vector = Q_Vector3d(0, 1, 2)
@@ -18,7 +19,7 @@ def test_Q_Vector3d_eq_operator():
 
 def test_Q_Vector3d_neq_operator():
     vector1 = Q_Vector3d(1, 2, 3)
-    vector2 = Q_Vector3d(3, 4, 5)
+    vector2 = Q_Vector3d(3, 2, 1)
     assert vector1 != vector2
 
 
@@ -131,6 +132,20 @@ def test_OrthoNormalBasis_from_single_axes():
     check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=0, y=-1, z=0)))  # Z0n0
     check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=0, y=0, z=-1)))  # Z00n
     check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=-0.211944, y=-0.495198, z=0.842530)))  # Zrnd
+
+
+def test_Q_buckets_function():
+    for number_of_items in range(2, 251, 6):
+        # print(f'Testing buckets of {number_of_items}... ')
+        for number_of_buckets in range(2, number_of_items + 1):
+            buckets = [_ for _ in Q_buckets(number_of_items=number_of_items, number_of_buckets=number_of_buckets)]
+            assert buckets[0][0] == 0
+            assert len(buckets) == number_of_buckets
+            last_end_point = buckets[0][1]
+            for bucket in buckets[1:]:
+                assert last_end_point == bucket[0]
+                last_end_point = bucket[1]
+            assert last_end_point == number_of_items
 
 
 if __name__ == '__main__':
