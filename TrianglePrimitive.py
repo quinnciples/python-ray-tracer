@@ -1,7 +1,9 @@
+import math
+
+from Hit import Hit
+from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
-import math
-from Primitive import Primitive
 
 
 class TrianglePrimitive(Primitive):
@@ -37,7 +39,7 @@ class TrianglePrimitive(Primitive):
         return (self.vertices[0] + self.vertices[1] + self.vertices[2]) * (1 / 3)
         # return self.face_normal
 
-    def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
+    def intersect(self, ray: Ray) -> Hit:
         # E1 = self.u_vector
         # E2 = self.v_vector
         # N = E1.cross_product(E2)
@@ -59,7 +61,8 @@ class TrianglePrimitive(Primitive):
 
         # ray and triangle are parallel if det is close to 0
         if (math.fabs(det) < TrianglePrimitive.EPSILON):
-            return None, None
+            # return None, None
+            return None
 
         backfacing = det < TrianglePrimitive.EPSILON
 
@@ -69,13 +72,16 @@ class TrianglePrimitive(Primitive):
         qVec = tVec.cross_product(self.u_vector)
         v = ray.direction.dot_product(qVec) * invDet
         if u < 0.0 or u > 1.0 or v < 0.0 or (u + v) > 1.0:
-            return None, None
+            # return None, None
+            return None
 
         t = self.v_vector.dot_product(qVec) * invDet
         if (t < TrianglePrimitive.EPSILON):
-            return None, None
+            # return None, None
+            return None
 
         if not backfacing:
-            return t, self.face_normal
+            # return t, self.face_normal
+            return Hit(distance=t, normal_to_surface=self.face_normal, is_inside=False)
         else:
-            return t, self.face_normal * -1
+            return Hit(distance=t, normal_to_surface=self.face_normal * -1, is_inside=False)

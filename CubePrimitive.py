@@ -1,8 +1,10 @@
+import math
+
+from Hit import Hit
+from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
-from Primitive import Primitive
 from TrianglePrimitive import TrianglePrimitive
-import math
 
 
 class CubePrimitive(Primitive):
@@ -11,10 +13,10 @@ class CubePrimitive(Primitive):
               /        /|
              /        / |
             /________/  |
-            |   |   |   |
-            |   |   |  /
-            |   |   | /
-            X--------/
+            |\       |  |
+            |  \     | /
+            |     \  |/
+            X_______\/
     front_bottom_left
     (x1, y1, z1)
     """
@@ -53,7 +55,7 @@ class CubePrimitive(Primitive):
             TrianglePrimitive((front + top + right, front + bottom + right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
         )
 
-    def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
+    def intersect(self, ray: Ray) -> Hit:
         # Call interct for all triangles in all faces
         # Track objects and distances that have collissions
         # Determine closest triangle
@@ -62,12 +64,12 @@ class CubePrimitive(Primitive):
         min_distance = math.inf
         normal_to_surface = None
         for triangle in self.faces:
-            this_distance, this_normal_to_surface = triangle.intersect(ray=ray)
-            if this_distance:
+            hit = triangle.intersect(ray=ray)
+            if hit:
                 num_intersections += 1
-            if this_distance and this_distance < min_distance:
-                min_distance = this_distance
-                normal_to_surface = this_normal_to_surface
+            if hit and hit.distance < min_distance:
+                min_distance = hit.distance
+                normal_to_surface = hit.normal_to_surface
             if num_intersections > 1:
                 break
-        return (min_distance, normal_to_surface)
+        return Hit(distance=min_distance, normal_to_surface=normal_to_surface, is_inside=False)  # Need to update is_inside check

@@ -9,6 +9,7 @@ from OrthoNormalBasis import OrthoNormalBasis
 from QFunctions.Q_Functions import Q_buckets, Q_map, Q_Vector3d
 from Ray import Ray
 from Primitive import Primitive
+from Hit import Hit
 
 
 class Scene:
@@ -21,11 +22,12 @@ class Scene:
         obj = None
         normal_to_surface = None
         for object in self.objects:
-            this_distance, this_normal_to_surface = object.intersect(ray=ray)
-            if this_distance and this_distance < min_distance:
-                min_distance = this_distance
+            # this_distance, this_normal_to_surface = object.intersect(ray=ray)
+            hit = object.intersect(ray=ray)
+            if hit and hit.distance < min_distance:
+                min_distance = hit.distance
                 obj = object
-                normal_to_surface = this_normal_to_surface
+                normal_to_surface = hit.normal_to_surface
         return (obj, min_distance, normal_to_surface)
 
     def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
@@ -45,6 +47,14 @@ class Scene:
         for result in results:
             image += result
         plt.imsave('image.png', image)
+        # PPM format
+        with open("image.ppm", "w") as pic:
+            pic.write(f"P3\n{width} {height}\n255\n")
+            image_data = image.tolist()
+            for row in image_data:
+                for col in row:
+                    pic.write(f"{int(col[0] * 255)} {int(col[1] * 255)} {int(col[2] * 255)} ")
+                pic.write("\n")
 
     def render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}) -> np.array:
         image = np.zeros((height, width, 3))
