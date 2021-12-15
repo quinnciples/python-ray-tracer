@@ -1,14 +1,14 @@
 import math
 from datetime import datetime as dt
 from multiprocessing import Pool, cpu_count
-import multiprocessing
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from OrthoNormalBasis import OrthoNormalBasis
-from QFunctions.Q_Functions import Q_buckets, Q_map, Q_Vector3d, Q_buckets
+from QFunctions.Q_Functions import Q_buckets, Q_map, Q_Vector3d
 from Ray import Ray
+from Primitive import Primitive
 
 
 class Scene:
@@ -16,7 +16,7 @@ class Scene:
         self.objects = objects
         self.lights = lights
 
-    def nearest_intersection(self, ray: Ray):  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
+    def nearest_intersection(self, ray: Ray) -> tuple[Primitive, float, Q_Vector3d]:  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
         min_distance = math.inf
         obj = None
         normal_to_surface = None
@@ -30,12 +30,12 @@ class Scene:
 
     def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
         number_of_buckets = 10
-        cores_to_use = cores_to_use if cores_to_use != 0 else multiprocessing.cpu_count()
+        cores_to_use = cores_to_use if cores_to_use != 0 else cpu_count()
         pool = Pool(processes=cores_to_use)
         # arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': _ * int(height / num_chunks), 'end': _ * int(height / num_chunks) + int(height / num_chunks)}) for _ in range(num_chunks)]
         arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
         start_time = dt.now()
-        print(f'Render started @ {width}x{height}x{lighting_samples} {"with anti aliasing " if anti_aliasing else ""}using {cores_to_use} cores at {start_time}.')
+        print(f'Render started @ {width}x{height}x{lighting_samples}spp {"with anti aliasing " if anti_aliasing else ""}using {cores_to_use} cores at {start_time}.')
         print()
         output = [pool.apply_async(self.render, args=(*arg,)) for arg in arguments]
         results = [o.get() for o in output]
@@ -46,7 +46,7 @@ class Scene:
             image += result
         plt.imsave('image.png', image)
 
-    def render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}):
+    def render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}) -> np.array:
         image = np.zeros((height, width, 3))
         SCREEN_RATIO = float(width) / float(height)
         SCREEN_DIMS = {'left': -1, 'top': 1 / SCREEN_RATIO, 'right': 1, 'bottom': -1 / SCREEN_RATIO}
@@ -83,6 +83,7 @@ class Scene:
         else:
             starting_row = row_range['start']
             ending_row = row_range['end']
+
         for y in range(starting_row, ending_row):
             print(f'{y + 1}/{ending_row}', end='\n')
             yy = Q_map(value=-y, lower_limit=-(height - 1), upper_limit=0, scaled_lower_limit=SCREEN_DIMS['bottom'], scaled_upper_limit=SCREEN_DIMS['top'])  # -((2 * y / float(HEIGHT - 1)) - 1)  # Q_map(value=-y, lower_limit=-(HEIGHT - 1), upper_limit=0, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (-y + (HEIGHT / 2.0)) / HEIGHT  # Need to make sure I did this right
@@ -90,12 +91,10 @@ class Scene:
                 xx = Q_map(value=x, lower_limit=0, upper_limit=width - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (2 * x / float(WIDTH - 1)) - 1  # Q_map(value=x, lower_limit=0, upper_limit=WIDTH - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (x - (WIDTH / 2.0)) / WIDTH
                 color_value = Q_Vector3d(0, 0, 0)
                 for num_samples, offset in enumerate(ANTI_ALIASING_OFFSETS):
-                    pixel = Q_Vector3d(xx + ANTI_ALIASING_OFFSETS[offset][0], yy + ANTI_ALIASING_OFFSETS[offset][1], 0)
-
                     # Initial setup
+                    pixel = Q_Vector3d(xx + ANTI_ALIASING_OFFSETS[offset][0], yy + ANTI_ALIASING_OFFSETS[offset][1], 0)
                     origin = camera_position
                     direction = (pixel - origin).normalized()
-
                     reflection = 1.0
 
                     for depth in range(max_depth):
@@ -154,8 +153,9 @@ class Scene:
                         # Reflection
                         color_value += illumination * reflection
 
-                        if not hit_light:
-                            break
+                        # TODO - testing on whether this is necessary or not.
+                        # if not hit_light:
+                        #     break
 
                         # Handle reflection and continue
                         reflection *= nearest_object.reflection

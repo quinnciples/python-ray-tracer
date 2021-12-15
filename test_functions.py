@@ -1,7 +1,11 @@
-from QFunctions.Q_Functions import Q_Vector3d, Q_buckets
-from OrthoNormalBasis import OrthoNormalBasis
 import math
+
 import numpy as np
+
+from OrthoNormalBasis import OrthoNormalBasis
+from QFunctions.Q_Functions import Q_buckets, Q_Vector3d
+from Ray import Ray
+from SpherePrimitive import SpherePrimitive
 
 
 def test_Q_Vector3d_constructor():
@@ -136,7 +140,6 @@ def test_OrthoNormalBasis_from_single_axes():
 
 def test_Q_buckets_function():
     for number_of_items in range(2, 251, 6):
-        # print(f'Testing buckets of {number_of_items}... ')
         for number_of_buckets in range(2, number_of_items + 1):
             buckets = [_ for _ in Q_buckets(number_of_items=number_of_items, number_of_buckets=number_of_buckets)]
             assert buckets[0][0] == 0
@@ -146,6 +149,75 @@ def test_Q_buckets_function():
                 assert last_end_point == bucket[0]
                 last_end_point = bucket[1]
             assert last_end_point == number_of_items
+
+
+def test_Ray_constructor():
+    r0 = Ray.from_two_vectors(first_vector=Q_Vector3d(1, 2, 3), second_vector=Q_Vector3d(2, 2, 3))
+    assert r0.direction == Q_Vector3d.NORM_XAXIS()
+    assert r0.origin == Q_Vector3d(1, 2, 3)
+
+    r1 = Ray.from_two_vectors(first_vector=Q_Vector3d(1, 2, 3), second_vector=Q_Vector3d(4, 5, 6))
+    assert r1.direction == (Q_Vector3d(4, 5, 6) - Q_Vector3d(1, 2, 3)).normalized()
+    assert r1.origin == Q_Vector3d(1, 2, 3)
+
+    r3 = Ray.from_two_vectors(Q_Vector3d(10, 10, 10), Q_Vector3d(10, 10, 60))
+    assert r3.origin + r3.direction * 0 == Q_Vector3d(10, 10, 10)
+    assert r3.origin + r3.direction * 50 == Q_Vector3d(10, 10, 60)
+
+
+def test_SpherePrimitive_constructor():
+    s = SpherePrimitive(position=Q_Vector3d(10, 20, 30), ambient=Q_Vector3d(0, 0, 0), diffuse=Q_Vector3d(0, 0, 0), specular=Q_Vector3d(0, 0, 0), shininess=0, reflection=0, radius=15)
+    assert s.position == Q_Vector3d(10, 20, 30)
+    assert s.radius == 15
+
+
+def test_SpherePrimitive_intersects():
+    THRESHOLD = 0.00001
+    s = SpherePrimitive(position=Q_Vector3d(10, 20, 30), ambient=Q_Vector3d(0, 0, 0), diffuse=Q_Vector3d(0, 0, 0), specular=Q_Vector3d(0, 0, 0), shininess=0, reflection=0, radius=15)
+    distance, normal_to_surface = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0)))
+    assert distance is None and normal_to_surface is None
+    distance, normal_to_surface = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(-10, -20, -30)))
+    assert distance is None and normal_to_surface is None
+    distance, normal_to_surface = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(10, 20, 30)))
+    assert distance is not None and normal_to_surface is not None
+    # 22.416738
+    assert math.fabs(22.41657 - distance) < THRESHOLD
+    assert (Q_Vector3d(-0.267261, -0.534522, -0.801784) - normal_to_surface).length < THRESHOLD
+    # CHECK(!hit.inside);
+
+
+def test_SpherePrimitive_intersection():
+    THRESHOLD = 0.00001
+    s = SpherePrimitive(position=Q_Vector3d(0, 0, 30), ambient=Q_Vector3d(0, 0, 0), diffuse=Q_Vector3d(0, 0, 0), specular=Q_Vector3d(0, 0, 0), shininess=0, reflection=0, radius=10)
+    distance, normal_to_surface = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 2)))
+    assert distance is not None and normal_to_surface is not None
+    assert math.fabs(distance - 20) < THRESHOLD
+    normal_to_surface.x == 0
+    normal_to_surface.y == 0
+    normal_to_surface.z == -1
+    ray = Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 2))
+    position = ray.origin + ray.direction * distance
+    assert position.x == 0
+    assert position.y == 0
+    assert math.fabs(position.z - 20) < THRESHOLD
+    # CHECK(!hit.inside);
+
+
+def test_SpherePrimitive_intersection_inside():
+    THRESHOLD = 0.00001
+    s = SpherePrimitive(position=Q_Vector3d(0, 0, 30), ambient=Q_Vector3d(0, 0, 0), diffuse=Q_Vector3d(0, 0, 0), specular=Q_Vector3d(0, 0, 0), shininess=0, reflection=0, radius=10)
+    distance, normal_to_surface = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 30), Q_Vector3d(0, 0, 2)))
+    assert distance is not None and normal_to_surface is not None
+    assert math.fabs(distance - 10) < THRESHOLD
+    normal_to_surface.x == 0
+    normal_to_surface.y == 0
+    normal_to_surface.z == 1
+    ray = Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 2))
+    position = ray.origin + ray.direction * distance
+    assert position.x == 0
+    assert position.y == 0
+    assert math.fabs(position.z - 10) < THRESHOLD
+    # CHECK(hit.inside);
 
 
 if __name__ == '__main__':

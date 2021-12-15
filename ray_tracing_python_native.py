@@ -8,6 +8,7 @@
 #           Static variables for colors
 
 import argparse
+import math
 
 from CubePrimitive import CubePrimitive
 from PlanePrimitive import PlanePrimitive
@@ -37,7 +38,7 @@ if __name__ == '__main__':
     ANTI_ALIASING = arguments.anti_aliasing_enabled
     CAMERA = Q_Vector3d(0, 0.1, -1.5)
     MAX_DEPTH = arguments.depth
-    NUMBER_OF_LIGHTING_SAMPLES = arguments.samples
+    NUMBER_OF_LIGHTING_SAMPLES = 1 if arguments.samples <= 1 else max(int(math.sqrt(arguments.samples)), 1)
     CORES_TO_USE = arguments.cores
 
     objects = [
