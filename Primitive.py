@@ -1,5 +1,6 @@
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
+from Hit import Hit
 
 
 class Primitive:
@@ -12,6 +13,6 @@ class Primitive:
         self.reflection = reflection
         self.emission = emission
 
-    def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
+    def intersect(self, ray: Ray) -> Hit:
         raise('Intersect function not implemented')
-        return None, None
+        return None

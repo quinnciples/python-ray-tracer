@@ -1,8 +1,10 @@
+import math
+
+from Hit import Hit
+from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
-from Primitive import Primitive
 from TrianglePrimitive import TrianglePrimitive
-import math
 
 
 class PlanePrimitive(Primitive):
@@ -29,7 +31,7 @@ class PlanePrimitive(Primitive):
             TrianglePrimitive((front + bottom + left, front + bottom + right, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
         )
 
-    def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
+    def intersect(self, ray: Ray) -> Hit:
         # Call interct for all triangles in all faces
         # Track objects and distances that have collissions
         # Determine closest triangle
@@ -39,8 +41,10 @@ class PlanePrimitive(Primitive):
         min_distance = math.inf
         normal_to_surface = None
         for triangle in self.faces:
-            this_distance, this_normal_to_surface = triangle.intersect(ray=ray)
-            if this_distance and this_distance < min_distance:
-                min_distance = this_distance
-                normal_to_surface = this_normal_to_surface
-        return (min_distance, normal_to_surface)
+            # this_distance, this_normal_to_surface = triangle.intersect(ray=ray)
+            hit = triangle.intersect(ray=ray)
+            if hit and hit.distance < min_distance:
+                min_distance = hit.distance
+                normal_to_surface = hit.normal_to_surface
+        # return (min_distance, normal_to_surface)
+        return Hit(distance=min_distance, normal_to_surface=normal_to_surface, is_inside=False)

@@ -1,7 +1,10 @@
+import math
+
+from Hit import Hit
+from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
-import math
-from Primitive import Primitive
+
 
 class SpherePrimitive(Primitive):
     """
@@ -17,7 +20,7 @@ class SpherePrimitive(Primitive):
         Primitive.__init__(self, position=position, ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
         self.radius = float(radius)
 
-    def intersect(self, ray: Ray) -> tuple[float, Q_Vector3d]:
+    def intersect(self, ray: Ray) -> Hit:
         b = 2 * ray.direction.dot_product(other_vector=(ray.origin - self.position))
         # c = ((ray.origin - self.position).length_squared) - (self.radius ** 2)
 
@@ -43,13 +46,15 @@ class SpherePrimitive(Primitive):
         b = op.dot_product(ray.direction)
         determinant = b * b - (op.length_squared) + radiusSquared
         if (determinant < 0):
-            return None, None
+            # return None, None
+            return None
 
         determinant = math.sqrt(determinant)
         minusT = b - determinant
         plusT = b + determinant
         if (minusT < SpherePrimitive.EPSILON and plusT < SpherePrimitive.EPSILON):
-            return None, None
+            # return None, None
+            return None
 
         t = minusT if minusT > SpherePrimitive.EPSILON else plusT
         hitPosition = ray.origin + (ray.direction * t)
@@ -57,4 +62,5 @@ class SpherePrimitive(Primitive):
         inside = normal.dot_product(ray.direction) > 0
         if inside:
             normal = normal * -1
-        return t, normal
+        # return t, normal
+        return Hit(distance=t, normal_to_surface=normal, is_inside=inside)
