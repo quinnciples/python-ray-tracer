@@ -47,6 +47,14 @@ class Scene:
         for result in results:
             image += result
         plt.imsave('image.png', image)
+        # PPM format
+        with open("image.ppm", "w") as pic:
+            pic.write(f"P3\n{width} {height}\n255\n")
+            image_data = image.tolist()
+            for row in image_data:
+                for col in row:
+                    pic.write(f"{int(col[0] * 255)} {int(col[1] * 255)} {int(col[2] * 255)} ")
+                pic.write("\n")
 
     def render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}) -> np.array:
         image = np.zeros((height, width, 3))
