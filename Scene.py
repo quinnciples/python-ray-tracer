@@ -28,13 +28,12 @@ class Scene:
                 min_distance = hit.distance
                 obj = object
                 normal_to_surface = hit.normal_to_surface
-        return (obj, min_distance, normal_to_surface)
+        return (obj, min_distance, normal_to_surface)  # This could be changed to return a Hit
 
     def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
         number_of_buckets = 10
-        cores_to_use = cores_to_use if cores_to_use != 0 else cpu_count()
+        cores_to_use = max(cores_to_use, 1) if cores_to_use != 0 else cpu_count()
         pool = Pool(processes=cores_to_use)
-        # arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': _ * int(height / num_chunks), 'end': _ * int(height / num_chunks) + int(height / num_chunks)}) for _ in range(num_chunks)]
         arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
         start_time = dt.now()
         print(f'Render started @ {width}x{height}x{lighting_samples}spp {"with anti aliasing " if anti_aliasing else ""}using {cores_to_use} cores at {start_time}.')
