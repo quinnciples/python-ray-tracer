@@ -98,9 +98,9 @@ class Scene:
 
         for y in range(starting_row, ending_row):
             print(f'{y + 1}/{ending_row}', end='\n')
-            yy = Q_map(value=-y, lower_limit=-(height - 1), upper_limit=0, scaled_lower_limit=SCREEN_DIMS['bottom'], scaled_upper_limit=SCREEN_DIMS['top'])  # -((2 * y / float(HEIGHT - 1)) - 1)  # Q_map(value=-y, lower_limit=-(HEIGHT - 1), upper_limit=0, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (-y + (HEIGHT / 2.0)) / HEIGHT  # Need to make sure I did this right
+            yy = Q_map(value=-y, lower_limit=-(height - 1), upper_limit=0, scaled_lower_limit=SCREEN_DIMS['bottom'], scaled_upper_limit=SCREEN_DIMS['top'])
             for x in range(width):
-                xx = Q_map(value=x, lower_limit=0, upper_limit=width - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (2 * x / float(WIDTH - 1)) - 1  # Q_map(value=x, lower_limit=0, upper_limit=WIDTH - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)  # (x - (WIDTH / 2.0)) / WIDTH
+                xx = Q_map(value=x, lower_limit=0, upper_limit=width - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)
                 color_value = Q_Vector3d(0, 0, 0)
                 for num_samples, offset in enumerate(ANTI_ALIASING_OFFSETS):
                     # Initial setup
@@ -109,7 +109,7 @@ class Scene:
                     direction = (pixel - origin).normalized()
                     reflection = 1.0
 
-                    for depth in range(max_depth):
+                    for _ in range(max_depth):
 
                         ray = Ray(origin=origin, direction=direction)
                         nearest_object, object_hit = self.nearest_intersection(ray=ray)
@@ -128,7 +128,7 @@ class Scene:
                         direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()
 
                         # Lighting
-                        illumination = self.calculate_lighting(lighting_samples=1, this_object=nearest_object, origin=shifted_point, direction_from_intersection_to_light=direction_from_intersection_to_light, object_hit=object_hit)
+                        illumination = self.calculate_lighting(lighting_samples=lighting_samples, this_object=nearest_object, origin=shifted_point, direction_from_intersection_to_light=direction_from_intersection_to_light, object_hit=object_hit)
 
                         # Reflection
                         color_value += illumination * reflection
