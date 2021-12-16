@@ -63,4 +63,4 @@ class SpherePrimitive(Primitive):
         if inside:
             normal = normal * -1
         # return t, normal
-        return Hit(distance=t, normal_to_surface=normal, is_inside=inside)
+        return Hit(position=ray.position_at_distance(t), distance=t, normal_to_surface=normal, is_inside=inside)

@@ -13,3 +13,6 @@ class Ray:
     @staticmethod
     def from_origin_and_direction(origin: Q_Vector3d, direction: Q_Vector3d):
         return Ray(origin=origin, direction=direction)
+
+    def position_at_distance(self, distance: float) -> Q_Vector3d:
+        return self.origin + self.direction * distance

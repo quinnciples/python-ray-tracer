@@ -6,6 +6,7 @@ from Hit import Hit
 from OrthoNormalBasis import OrthoNormalBasis
 from QFunctions.Q_Functions import Q_buckets, Q_Vector3d
 from Ray import Ray
+from Scene import Scene
 from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
 
@@ -379,29 +380,82 @@ def test_TrianglePrimitive_intersects_counter_clockwise():
     assert hit.normal_to_surface == Q_Vector3d(0, 0, -1)
 
 
-#   SECTION("interpolates normals") {
-#     auto firstNormal = Vec3(-0.1, 0, -1).normalised();
-#     auto secondNormal = Vec3(0.1, 0.1, -1).normalised();
-#     auto thirdNormal = Vec3(-0.1, 0.1, -1).normalised();
-#     Triangle t(Triangle::Vertices{Vec3(0, 0, 3), Vec3(1, 1, 3), Vec3(0, 1, 3)},
-#                Triangle::Normals{firstNormal, secondNormal, thirdNormal});
-#     Hit hit;
-#     CHECK(!t.intersect(Ray::fromTwoPoints(Vec3(0, 0, 0), Vec3(0, 1, 0)), hit));
-#     CHECK(!t.intersect(Ray::fromTwoPoints(Vec3(0, 0, 0), Vec3(0, 0, -1)), hit));
-#     REQUIRE(t.intersect(Ray::fromTwoPoints(Vec3(0, 0, 0), Vec3(0, 0, 1)), hit));
-#     CHECK(hit.normal == ApproxVec3(-firstNormal));
+def test_Scene_constructor():
+    s = Scene(
+        objects=[
+            SpherePrimitive(
+                position=Q_Vector3d(0, 0, 0),
+                radius=10,
+                ambient=Q_Vector3d(0, 0, 0),
+                diffuse=Q_Vector3d(0, 0, 0),
+                specular=Q_Vector3d(0, 0, 0),
+                shininess=0,
+                reflection=0,
+            )
+        ]
+    )
 
-#     REQUIRE(t.intersect(Ray::fromTwoPoints(Vec3(1, 1, 0), Vec3(1, 1, 1)), hit));
-#     CHECK(hit.normal == ApproxVec3(-secondNormal));
 
-#     REQUIRE(t.intersect(Ray::fromTwoPoints(Vec3(0, 1, 0), Vec3(0, 1, 1)), hit));
-#     CHECK(hit.normal == ApproxVec3(-thirdNormal));
+def test_Scene_nearest_intersection_with_one_object():
+    s = Scene(
+        objects=[
+            SpherePrimitive(
+                position=Q_Vector3d(0, 0, 50),
+                radius=10,
+                ambient=Q_Vector3d(0, 0, 0),
+                diffuse=Q_Vector3d(0, 0, 0),
+                specular=Q_Vector3d(0, 0, 0),
+                shininess=0,
+                reflection=0,
+            )
+        ]
+    )
+    # Test no intersection occurs
+    ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 1, 0))
+    nearest_object, distance, normal_to_surface = s.nearest_intersection(ray=ray)
+    assert nearest_object is None and normal_to_surface is None
+    # Test intersection does occur
+    ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 0, 1))
+    nearest_object, distance, normal_to_surface = s.nearest_intersection(ray=ray)
+    assert (
+        nearest_object is not None and normal_to_surface is not None and distance == 40
+    )
 
-#     REQUIRE(t.intersect(
-#         Ray::fromTwoPoints(Vec3(0.5, 0.5, 0), Vec3(0.5, 0.5, 1)), hit));
-#     CHECK(hit.normal == ApproxVec3(0.000246001, -0.0498149, 0.998758));
-#   }
-# }
+
+def test_Scene_nearest_intersection_with_two_object():
+    s2 = Scene(
+        objects=[
+            SpherePrimitive(
+                position=Q_Vector3d(0, 0, 50),
+                radius=10,
+                ambient=Q_Vector3d(0, 0, 0),
+                diffuse=Q_Vector3d(0, 0, 0),
+                specular=Q_Vector3d(0, 0, 0),
+                shininess=0,
+                reflection=0,
+            ),
+            SpherePrimitive(
+                position=Q_Vector3d(0, 0, 100),
+                radius=10,
+                ambient=Q_Vector3d(0, 0, 0),
+                diffuse=Q_Vector3d(0, 0, 0),
+                specular=Q_Vector3d(0, 0, 0),
+                shininess=0,
+                reflection=0,
+            ),
+        ]
+    )
+    # Test no intersection occurs
+    ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 1, 0))
+    nearest_object, distance, normal_to_surface = s2.nearest_intersection(ray=ray)
+    assert nearest_object is None and normal_to_surface is None
+    # Test intersection does occur
+    ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 0, 1))
+    nearest_object, distance, normal_to_surface = s2.nearest_intersection(ray=ray)
+    assert (
+        nearest_object is not None and normal_to_surface is not None and distance == 40
+    )
+
 
 if __name__ == "__main__":
     list_of_tests = [x for x in dir() if "test_" in x]

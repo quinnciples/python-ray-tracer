@@ -1,3 +1,3 @@
 from collections import namedtuple
 
-Hit = namedtuple("Hit", ["distance", "normal_to_surface", "is_inside"])
+Hit = namedtuple("Hit", ["position", "distance", "normal_to_surface", "is_inside"])

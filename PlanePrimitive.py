@@ -47,4 +47,4 @@ class PlanePrimitive(Primitive):
                 min_distance = hit.distance
                 normal_to_surface = hit.normal_to_surface
         # return (min_distance, normal_to_surface)
-        return Hit(distance=min_distance, normal_to_surface=normal_to_surface, is_inside=False)
+        return Hit(position=ray.position_at_distance(min_distance), distance=min_distance, normal_to_surface=normal_to_surface, is_inside=False)

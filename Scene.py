@@ -21,6 +21,7 @@ class Scene:
         min_distance = math.inf
         obj = None
         normal_to_surface = None
+        is_inside = None
         for object in self.objects:
             # this_distance, this_normal_to_surface = object.intersect(ray=ray)
             hit = object.intersect(ray=ray)
@@ -28,7 +29,8 @@ class Scene:
                 min_distance = hit.distance
                 obj = object
                 normal_to_surface = hit.normal_to_surface
-        return (obj, min_distance, normal_to_surface)  # This could be changed to return a Hit
+                is_inside = hit.is_inside
+        return obj, Hit(position=ray.position_at_distance(min_distance), distance=min_distance, normal_to_surface=normal_to_surface, is_inside=is_inside)
 
     def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
         number_of_buckets = 10
@@ -109,7 +111,7 @@ class Scene:
                     for depth in range(max_depth):
 
                         ray = Ray(origin=origin, direction=direction)
-                        nearest_object, distance_to_object, normal_to_surface = self.nearest_intersection(ray=ray)
+                        nearest_object, object_hit = self.nearest_intersection(ray=ray)
 
                         # Did we even hit anything?
                         if nearest_object is None:
@@ -120,8 +122,8 @@ class Scene:
                         #     color_value = nearest_object.emission  # * reflection?
                         #     break
 
-                        intersection_point = origin + direction * distance_to_object
-                        shifted_point = intersection_point + normal_to_surface * 1e-5
+                        intersection_point = origin + direction * object_hit.distance
+                        shifted_point = intersection_point + object_hit.normal_to_surface * 1e-5
                         direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()
 
                         # Lighting
@@ -135,7 +137,7 @@ class Scene:
                                 wobbled_direction = OrthoNormalBasis.cone_sample(direction=direction_from_intersection_to_light, cone_theta=cone_theta, u=u / NUMBER_OF_LIGHTING_SAMPLES, v=v / NUMBER_OF_LIGHTING_SAMPLES)
                                 # ray = Ray(origin=shifted_point, direction=direction_from_intersection_to_light)
                                 ray = Ray(origin=shifted_point, direction=wobbled_direction)
-                                nearest_light, distance_to_light, __ = self.nearest_intersection(ray=ray)
+                                nearest_light, light_hit = self.nearest_intersection(ray=ray)
 
                                 # distance_to_light = (self.lights[0]['position'] - intersection_point).length
                                 is_shadowed = nearest_light is None or nearest_light.emission == Q_Vector3d(0, 0, 0)
@@ -149,13 +151,13 @@ class Scene:
                                 illumination += nearest_object.ambient * nearest_light.emission
 
                                 # Diffuse lighting
-                                intensity = math.fabs(wobbled_direction.dot_product(normal_to_surface))
+                                intensity = math.fabs(wobbled_direction.dot_product(object_hit.normal_to_surface))
                                 illumination += nearest_object.diffuse * nearest_light.emission * intensity
 
                                 # Specular lighting
                                 intersection_to_camera = (camera_position - intersection_point).normalized()
                                 H = (wobbled_direction + intersection_to_camera).normalized()
-                                illumination += nearest_object.specular * nearest_light.emission * (normal_to_surface.dot_product(H)) ** (nearest_object.shininess / 4)
+                                illumination += nearest_object.specular * nearest_light.emission * (object_hit.normal_to_surface.dot_product(H)) ** (nearest_object.shininess / 4)
 
                         illumination = illumination * (1 / (NUMBER_OF_LIGHTING_SAMPLES ** 2))
 
@@ -173,7 +175,7 @@ class Scene:
 
                         # Reset origination and direction to this point and continue recursively
                         origin = shifted_point
-                        direction = direction.reflected(other_vector=normal_to_surface)
+                        direction = direction.reflected(other_vector=object_hit.normal_to_surface)
 
                 image[y, x] = (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()
 

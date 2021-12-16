@@ -82,6 +82,6 @@ class TrianglePrimitive(Primitive):
 
         if not backfacing:
             # return t, self.face_normal
-            return Hit(distance=t, normal_to_surface=self.face_normal, is_inside=False)
+            return Hit(position=ray.position_at_distance(t), distance=t, normal_to_surface=self.face_normal, is_inside=False)
         else:
-            return Hit(distance=t, normal_to_surface=self.face_normal * -1, is_inside=False)
+            return Hit(position=ray.position_at_distance(t), distance=t, normal_to_surface=self.face_normal * -1, is_inside=False)
