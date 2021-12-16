@@ -13,7 +13,8 @@ from Hit import Hit
 
 
 class Scene:
-    def __init__(self, objects: list = [], lights: list = []):
+    def __init__(self, camera_position: Q_Vector3d, objects: list = [], lights: list = []):
+        self.camera_position = camera_position
         self.objects = objects
         self.lights = lights
 
@@ -32,11 +33,11 @@ class Scene:
                 is_inside = hit.is_inside
         return obj, Hit(position=ray.position_at_distance(min_distance), distance=min_distance, normal_to_surface=normal_to_surface, is_inside=is_inside)
 
-    def multi_render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
+    def multi_render(self, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
         number_of_buckets = 10
         cores_to_use = max(cores_to_use, 1) if cores_to_use != 0 else cpu_count()
         pool = Pool(processes=cores_to_use)
-        arguments = [(camera_position, width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
+        arguments = [(width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
         start_time = dt.now()
         print(f'Render started @ {width}x{height}x{lighting_samples}spp {"with anti aliasing " if anti_aliasing else ""}using {cores_to_use} cores at {start_time}.')
         print()
@@ -57,7 +58,7 @@ class Scene:
                     pic.write(f"{int(col[0] * 255)} {int(col[1] * 255)} {int(col[2] * 255)} ")
                 pic.write("\n")
 
-    def render(self, camera_position: Q_Vector3d, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}) -> np.array:
+    def render(self, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}) -> np.array:
         image = np.zeros((height, width, 3))
         SCREEN_RATIO = float(width) / float(height)
         SCREEN_DIMS = {'left': -1, 'top': 1 / SCREEN_RATIO, 'right': 1, 'bottom': -1 / SCREEN_RATIO}
@@ -104,7 +105,7 @@ class Scene:
                 for num_samples, offset in enumerate(ANTI_ALIASING_OFFSETS):
                     # Initial setup
                     pixel = Q_Vector3d(xx + ANTI_ALIASING_OFFSETS[offset][0], yy + ANTI_ALIASING_OFFSETS[offset][1], 0)
-                    origin = camera_position
+                    origin = self.camera_position
                     direction = (pixel - origin).normalized()
                     reflection = 1.0
 
@@ -129,35 +130,14 @@ class Scene:
                         # Lighting
                         # Fire a ray towards where the light source is
                         NUMBER_OF_LIGHTING_SAMPLES = lighting_samples
-                        hit_light = False
+                        # hit_light = False
                         cone_theta = math.pi / 56.0
                         illumination = Q_Vector3d(0, 0, 0)
                         for u in range(NUMBER_OF_LIGHTING_SAMPLES):
                             for v in range(NUMBER_OF_LIGHTING_SAMPLES):
                                 wobbled_direction = OrthoNormalBasis.cone_sample(direction=direction_from_intersection_to_light, cone_theta=cone_theta, u=u / NUMBER_OF_LIGHTING_SAMPLES, v=v / NUMBER_OF_LIGHTING_SAMPLES)
-                                # ray = Ray(origin=shifted_point, direction=direction_from_intersection_to_light)
                                 ray = Ray(origin=shifted_point, direction=wobbled_direction)
-                                nearest_light, light_hit = self.nearest_intersection(ray=ray)
-
-                                # distance_to_light = (self.lights[0]['position'] - intersection_point).length
-                                is_shadowed = nearest_light is None or nearest_light.emission == Q_Vector3d(0, 0, 0)
-
-                                # Is the point we hit able to see a light?
-                                if is_shadowed:
-                                    continue
-                                hit_light = True
-
-                                # Ambient lighting
-                                illumination += nearest_object.ambient * nearest_light.emission
-
-                                # Diffuse lighting
-                                intensity = math.fabs(wobbled_direction.dot_product(object_hit.normal_to_surface))
-                                illumination += nearest_object.diffuse * nearest_light.emission * intensity
-
-                                # Specular lighting
-                                intersection_to_camera = (camera_position - intersection_point).normalized()
-                                H = (wobbled_direction + intersection_to_camera).normalized()
-                                illumination += nearest_object.specular * nearest_light.emission * (object_hit.normal_to_surface.dot_product(H)) ** (nearest_object.shininess / 4)
+                                illumination += self.calculate_illumination(ray=ray, this_object=nearest_object, hit=object_hit)
 
                         illumination = illumination * (1 / (NUMBER_OF_LIGHTING_SAMPLES ** 2))
 
@@ -180,3 +160,25 @@ class Scene:
                 image[y, x] = (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()
 
         return image
+
+    def calculate_illumination(self, ray: Ray, this_object: Primitive, hit: Hit) -> Q_Vector3d:
+        illumination = Q_Vector3d(0, 0, 0)
+        nearest_light, _ = self.nearest_intersection(ray=ray)
+        is_shadowed = nearest_light is None or nearest_light.emission == Q_Vector3d(0, 0, 0)
+
+        # Is the point we hit able to see a light?
+        if is_shadowed:
+            return illumination
+
+        # Ambient lighting
+        illumination += this_object.ambient * nearest_light.emission
+
+        # Diffuse lighting
+        intensity = math.fabs(ray.direction.dot_product(hit.normal_to_surface))
+        illumination += this_object.diffuse * nearest_light.emission * intensity
+
+        # Specular lighting
+        intersection_to_camera = (self.camera_position - hit.position).normalized()
+        H = (ray.direction + intersection_to_camera).normalized()
+        illumination += this_object.specular * nearest_light.emission * (hit.normal_to_surface.dot_product(H)) ** (this_object.shininess / 4)
+        return illumination
