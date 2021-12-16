@@ -128,18 +128,7 @@ class Scene:
                         direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()
 
                         # Lighting
-                        # Fire a ray towards where the light source is
-                        NUMBER_OF_LIGHTING_SAMPLES = lighting_samples
-                        # hit_light = False
-                        cone_theta = math.pi / 56.0
-                        illumination = Q_Vector3d(0, 0, 0)
-                        for u in range(NUMBER_OF_LIGHTING_SAMPLES):
-                            for v in range(NUMBER_OF_LIGHTING_SAMPLES):
-                                wobbled_direction = OrthoNormalBasis.cone_sample(direction=direction_from_intersection_to_light, cone_theta=cone_theta, u=u / NUMBER_OF_LIGHTING_SAMPLES, v=v / NUMBER_OF_LIGHTING_SAMPLES)
-                                ray = Ray(origin=shifted_point, direction=wobbled_direction)
-                                illumination += self.calculate_illumination(ray=ray, this_object=nearest_object, hit=object_hit)
-
-                        illumination = illumination * (1 / (NUMBER_OF_LIGHTING_SAMPLES ** 2))
+                        illumination = self.calculate_lighting(lighting_samples=1, this_object=nearest_object, origin=shifted_point, direction_from_intersection_to_light=direction_from_intersection_to_light, object_hit=object_hit)
 
                         # Reflection
                         color_value += illumination * reflection
@@ -160,6 +149,17 @@ class Scene:
                 image[y, x] = (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()
 
         return image
+
+    def calculate_lighting(self, lighting_samples: int, this_object: Primitive, origin: Q_Vector3d, direction_from_intersection_to_light: Q_Vector3d, object_hit: Hit) -> Q_Vector3d:
+        CONE_THETA = math.pi / 56.0
+        illumination = Q_Vector3d(0, 0, 0)
+        for u in range(lighting_samples):
+            for v in range(lighting_samples):
+                # Fire a ray towards where the light source is
+                wobbled_direction = OrthoNormalBasis.cone_sample(direction=direction_from_intersection_to_light, cone_theta=CONE_THETA, u=u / lighting_samples, v=v / lighting_samples)
+                ray = Ray(origin=origin, direction=wobbled_direction)
+                illumination += self.calculate_illumination(ray=ray, this_object=this_object, hit=object_hit)
+        return illumination * (1 / (lighting_samples ** 2))
 
     def calculate_illumination(self, ray: Ray, this_object: Primitive, hit: Hit) -> Q_Vector3d:
         illumination = Q_Vector3d(0, 0, 0)
