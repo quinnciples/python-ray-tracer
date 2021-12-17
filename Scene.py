@@ -18,7 +18,7 @@ class Scene:
         self.objects = objects
         self.lights = lights
 
-    def nearest_intersection(self, ray: Ray) -> tuple[Primitive, float, Q_Vector3d]:  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
+    def nearest_intersection(self, ray: Ray) -> tuple[Primitive, Hit]:  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
         min_distance = math.inf
         obj = None
         nearest_hit = None

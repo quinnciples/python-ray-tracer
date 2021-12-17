@@ -50,8 +50,7 @@ class OrthoNormalBasis:
     @staticmethod
     def fromZ(z_vector: Q_Vector3d):
         if (
-            math.fabs(z_vector.dot_product(Q_Vector3d.NORM_XAXIS()))
-            > OrthoNormalBasis.COINCIDENT
+            math.fabs(z_vector.dot_product(Q_Vector3d.NORM_XAXIS())) > OrthoNormalBasis.COINCIDENT
         ):
             xx = Q_Vector3d.NORM_YAXIS().cross_product(z_vector).normalized()
         else:
@@ -80,7 +79,7 @@ class OrthoNormalBasis:
             Q_Vector3d(
                 math.cos(random_theta) * radius,
                 math.sin(random_theta) * radius,
-                z_scale
+                z_scale,
             )
         ).normalized()
 
