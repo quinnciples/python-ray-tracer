@@ -340,6 +340,7 @@ def test_Scene_constructor():
             )
         ],
     )
+    assert s is not None and len(s.objects) > 0
 
 
 def test_Scene_nearest_intersection_with_one_object():
