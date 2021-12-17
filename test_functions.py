@@ -44,13 +44,8 @@ def test_Q_Vector3d_dot_product():
 
 
 def test_Q_Vector3d_cross_product():
-    assert (
-        Q_Vector3d.NORM_XAXIS().cross_product(Q_Vector3d.NORM_YAXIS())
-        == Q_Vector3d.NORM_ZAXIS()
-    )
-    assert Q_Vector3d(1, 2, 3).cross_product(Q_Vector3d(4, 5, 6)) == Q_Vector3d(
-        -3, 6, -3
-    )
+    assert Q_Vector3d.NORM_XAXIS().cross_product(Q_Vector3d.NORM_YAXIS()) == Q_Vector3d.NORM_ZAXIS()
+    assert Q_Vector3d(1, 2, 3).cross_product(Q_Vector3d(4, 5, 6)) == Q_Vector3d(-3, 6, -3)
 
 
 def test_Q_Vector3d__str__():
@@ -78,17 +73,14 @@ def test_Q_Vector3d_matches_numpy():
                 np_center = np.array([-x, y, z])
                 Q_center = Q_Vector3d(x=-x, y=y, z=z)
                 assert (
-                    np.linalg.norm(np_origin - np_center)
-                    == (Q_origin - Q_center).length
+                    np.linalg.norm(np_origin - np_center) == (Q_origin - Q_center).length
                     and np.linalg.norm(np_origin - np_center) > 0
                     and (Q_origin - Q_center).length > 0
                 )
 
 
 def test_OrthoNormalBasis_constructor():
-    onb = OrthoNormalBasis(
-        x=Q_Vector3d.NORM_XAXIS(), y=Q_Vector3d.NORM_YAXIS(), z=Q_Vector3d.NORM_ZAXIS()
-    )
+    onb = OrthoNormalBasis(x=Q_Vector3d.NORM_XAXIS(), y=Q_Vector3d.NORM_YAXIS(), z=Q_Vector3d.NORM_ZAXIS())
     assert onb.x == Q_Vector3d.NORM_XAXIS()
     assert onb.y == Q_Vector3d.NORM_YAXIS()
     assert onb.z == Q_Vector3d.NORM_ZAXIS()
@@ -146,34 +138,19 @@ def test_OrthoNormalBasis_from_single_axes():
     check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.NORM_XAXIS()))  # Z100
     check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.NORM_YAXIS()))  # Z010
     check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.NORM_ZAXIS()))  # Z001
+    check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=0, y=0, z=2)))  # Z002
+    check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=-1, y=0, z=0)))  # Zn00
+    check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=0, y=-1, z=0)))  # Z0n0
+    check_is_basis(onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=0, y=0, z=-1)))  # Z00n
     check_is_basis(
-        onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=0, y=0, z=2))
-    )  # Z002
-    check_is_basis(
-        onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=-1, y=0, z=0))
-    )  # Zn00
-    check_is_basis(
-        onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=0, y=-1, z=0))
-    )  # Z0n0
-    check_is_basis(
-        onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=0, y=0, z=-1))
-    )  # Z00n
-    check_is_basis(
-        onb=OrthoNormalBasis.fromZ(
-            Q_Vector3d.get_normalized_vector(x=-0.211944, y=-0.495198, z=0.842530)
-        )
+        onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=-0.211944, y=-0.495198, z=0.842530))
     )  # Zrnd
 
 
 def test_Q_buckets_function():
     for number_of_items in range(2, 251, 6):
         for number_of_buckets in range(2, number_of_items + 1):
-            buckets = [
-                _
-                for _ in Q_buckets(
-                    number_of_items=number_of_items, number_of_buckets=number_of_buckets
-                )
-            ]
+            buckets = [_ for _ in Q_buckets(number_of_items=number_of_items, number_of_buckets=number_of_buckets)]
             assert buckets[0][0] == 0
             assert len(buckets) == number_of_buckets
             last_end_point = buckets[0][1]
@@ -184,15 +161,11 @@ def test_Q_buckets_function():
 
 
 def test_Ray_constructor():
-    r0 = Ray.from_two_vectors(
-        first_vector=Q_Vector3d(1, 2, 3), second_vector=Q_Vector3d(2, 2, 3)
-    )
+    r0 = Ray.from_two_vectors(first_vector=Q_Vector3d(1, 2, 3), second_vector=Q_Vector3d(2, 2, 3))
     assert r0.direction == Q_Vector3d.NORM_XAXIS()
     assert r0.origin == Q_Vector3d(1, 2, 3)
 
-    r1 = Ray.from_two_vectors(
-        first_vector=Q_Vector3d(1, 2, 3), second_vector=Q_Vector3d(4, 5, 6)
-    )
+    r1 = Ray.from_two_vectors(first_vector=Q_Vector3d(1, 2, 3), second_vector=Q_Vector3d(4, 5, 6))
     assert r1.direction == (Q_Vector3d(4, 5, 6) - Q_Vector3d(1, 2, 3)).normalized()
     assert r1.origin == Q_Vector3d(1, 2, 3)
 
@@ -226,27 +199,15 @@ def test_SpherePrimitive_intersects():
         reflection=0,
         radius=15,
     )
-    hit = s.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0))
-    )
+    hit = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0)))
     assert hit is None
-    hit = s.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(-10, -20, -30))
-    )
+    hit = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(-10, -20, -30)))
     assert hit is None
-    hit = s.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(10, 20, 30))
-    )
-    assert (
-        hit is not None
-        and hit.distance is not None
-        and hit.normal_to_surface is not None
-    )
+    hit = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(10, 20, 30)))
+    assert hit is not None and hit.distance is not None and hit.normal_to_surface is not None
     # 22.416738
     assert math.fabs(22.41657 - hit.distance) < THRESHOLD
-    assert (
-        Q_Vector3d(-0.267261, -0.534522, -0.801784) - hit.normal_to_surface
-    ).length < THRESHOLD
+    assert (Q_Vector3d(-0.267261, -0.534522, -0.801784) - hit.normal_to_surface).length < THRESHOLD
     # CHECK(!hit.inside);
 
 
@@ -261,9 +222,7 @@ def test_SpherePrimitive_intersection():
         reflection=0,
         radius=10,
     )
-    hit = s.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 2))
-    )
+    hit = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 2)))
     assert hit is not None and hit.normal_to_surface is not None
     assert math.fabs(hit.distance - 20.0) < THRESHOLD
     hit.normal_to_surface.x == 0
@@ -288,9 +247,7 @@ def test_SpherePrimitive_intersection_inside():
         reflection=0,
         radius=10,
     )
-    hit = s.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 30), Q_Vector3d(0, 0, 2))
-    )
+    hit = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 30), Q_Vector3d(0, 0, 2)))
     assert hit is not None and hit.normal_to_surface is not None
     assert math.fabs(hit.distance - 10) < THRESHOLD
     hit.normal_to_surface.x == 0
@@ -328,17 +285,11 @@ def test_TrianglePrimitive_intersects_clockwise():
         shininess=0,
         reflection=0,
     )
-    hit = t.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0))
-    )
+    hit = t.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0)))
     assert hit is None
-    hit = t.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, -1))
-    )
+    hit = t.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, -1)))
     assert hit is None
-    hit = t.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 1))
-    )
+    hit = t.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 1)))
     assert hit is not None and hit.normal_to_surface is not None
     assert math.fabs(hit.distance - 3.0) < THRESHOLD
     ray = Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 1))
@@ -359,17 +310,11 @@ def test_TrianglePrimitive_intersects_counter_clockwise():
         shininess=0,
         reflection=0,
     )
-    hit = t.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0))
-    )
+    hit = t.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0)))
     assert hit is None
-    hit = t.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, -1))
-    )
+    hit = t.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, -1)))
     assert hit is None
-    hit = t.intersect(
-        ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 1))
-    )
+    hit = t.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 1)))
     assert hit is not None and hit.normal_to_surface is not None
     assert math.fabs(hit.distance - 3.0) < THRESHOLD
     ray = Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 1))
@@ -382,6 +327,7 @@ def test_TrianglePrimitive_intersects_counter_clockwise():
 
 def test_Scene_constructor():
     s = Scene(
+        camera_position=Q_Vector3d(0, 0, 0),
         objects=[
             SpherePrimitive(
                 position=Q_Vector3d(0, 0, 0),
@@ -392,12 +338,14 @@ def test_Scene_constructor():
                 shininess=0,
                 reflection=0,
             )
-        ]
+        ],
     )
+    assert s is not None and len(s.objects) > 0
 
 
 def test_Scene_nearest_intersection_with_one_object():
     s = Scene(
+        camera_position=Q_Vector3d(0, 0, 0),
         objects=[
             SpherePrimitive(
                 position=Q_Vector3d(0, 0, 50),
@@ -408,22 +356,21 @@ def test_Scene_nearest_intersection_with_one_object():
                 shininess=0,
                 reflection=0,
             )
-        ]
+        ],
     )
     # Test no intersection occurs
     ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 1, 0))
-    nearest_object, distance, normal_to_surface = s.nearest_intersection(ray=ray)
-    assert nearest_object is None and normal_to_surface is None
+    nearest_object, hit = s.nearest_intersection(ray=ray)
+    assert nearest_object is None and hit is None
     # Test intersection does occur
     ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 0, 1))
-    nearest_object, distance, normal_to_surface = s.nearest_intersection(ray=ray)
-    assert (
-        nearest_object is not None and normal_to_surface is not None and distance == 40
-    )
+    nearest_object, hit = s.nearest_intersection(ray=ray)
+    assert nearest_object is not None and hit is not None and hit.distance == 40
 
 
 def test_Scene_nearest_intersection_with_two_object():
     s2 = Scene(
+        camera_position=Q_Vector3d(0, 0, 0),
         objects=[
             SpherePrimitive(
                 position=Q_Vector3d(0, 0, 50),
@@ -443,18 +390,16 @@ def test_Scene_nearest_intersection_with_two_object():
                 shininess=0,
                 reflection=0,
             ),
-        ]
+        ],
     )
     # Test no intersection occurs
     ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 1, 0))
-    nearest_object, distance, normal_to_surface = s2.nearest_intersection(ray=ray)
-    assert nearest_object is None and normal_to_surface is None
+    nearest_object, hit = s2.nearest_intersection(ray=ray)
+    assert nearest_object is None and hit is None
     # Test intersection does occur
     ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 0, 1))
-    nearest_object, distance, normal_to_surface = s2.nearest_intersection(ray=ray)
-    assert (
-        nearest_object is not None and normal_to_surface is not None and distance == 40
-    )
+    nearest_object, hit = s2.nearest_intersection(ray=ray)
+    assert nearest_object is not None and hit is not None and hit.distance == 40
 
 
 if __name__ == "__main__":
@@ -474,7 +419,5 @@ if __name__ == "__main__":
             print(str(e))
 
     print()
-    print(
-        f"{total_tests} tests run, {total_tests - failed_tests} tests passed, {failed_tests} tests failed."
-    )
+    print(f"{total_tests} tests run, {total_tests - failed_tests} tests passed, {failed_tests} tests failed.")
     print()
