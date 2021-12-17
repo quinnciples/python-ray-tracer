@@ -87,8 +87,8 @@ if __name__ == "__main__":
         PlanePrimitive(
             front_bottom_left=Q_Vector3d(x=-500, y=-15, z=-10),
             rear_top_right=Q_Vector3d(500, -15, 250),
-            ambient=Q_Vector3d(0, 0.45, 0),
-            diffuse=Q_Vector3d(0, 0.45, 0),
+            ambient=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
+            diffuse=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
             specular=Q_Vector3d(1.0, 1.0, 1.0),
             shininess=100,
             reflection=0.4,

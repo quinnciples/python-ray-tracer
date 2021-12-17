@@ -41,7 +41,7 @@ class Scene:
                 for col in row:
                     pic.write(f"{int(col[0] * 255)} {int(col[1] * 255)} {int(col[2] * 255)} ")
                 pic.write("\n")
-    
+
     def multi_render(self, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
         number_of_buckets = 10
         cores_to_use = max(cores_to_use, 1) if cores_to_use != 0 else cpu_count()
@@ -58,7 +58,7 @@ class Scene:
         for result in results:
             image += result
         plt.imsave('image.png', image)
-        Scene.write_ppm_file(image_data = image.tolist())
+        Scene.write_ppm_file(image_data=image.tolist())
 
     def render(self, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}) -> np.array:
         image = np.zeros((height, width, 3))
@@ -117,18 +117,12 @@ class Scene:
         return image
 
     def trace_ray(self, ray: Ray, max_depth: int, current_depth: int = 1, reflection: float = 1.0) -> Q_Vector3d:
-
         nearest_object, object_hit = self.nearest_intersection(ray=ray)
         color_value = Q_Vector3d(0, 0, 0)
 
         # Did we even hit anything?
         if nearest_object is None:
             return color_value
-
-        # Did we hit a light?
-        # if nearest_object.emission != Q_Vector3d(0, 0, 0):
-        #     color_value = nearest_object.emission  # * reflection?
-        #     break
 
         shifted_point = object_hit.position + object_hit.normal_to_surface * 1e-5
         direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()
@@ -138,10 +132,6 @@ class Scene:
 
         # Reflection
         color_value += illumination * reflection
-
-        # TODO - testing on whether this is necessary or not.
-        # if not hit_light:
-        #     break
 
         # Handle reflection and continue
         reflection *= nearest_object.reflection
@@ -156,12 +146,12 @@ class Scene:
         direction = ray.direction.reflected(other_vector=object_hit.normal_to_surface)
         return color_value + self.trace_ray(Ray(origin=origin, direction=direction), max_depth=max_depth, current_depth=current_depth + 1, reflection=reflection)
 
-    def calculate_lighting(self,this_object: Primitive, origin: Q_Vector3d, direction_from_intersection_to_light: Q_Vector3d, object_hit: Hit) -> Q_Vector3d:
+    def calculate_lighting(self, this_object: Primitive, origin: Q_Vector3d, direction_from_intersection_to_light: Q_Vector3d, object_hit: Hit) -> Q_Vector3d:
         CONE_THETA = math.pi / 56.0
         illumination = Q_Vector3d(0, 0, 0)
         for u in range(self.lighting_samples):
             for v in range(self.lighting_samples):
-                # Fire a ray towards where the light source is
+                # Fire ray(s) towards where the light source is
                 wobbled_direction = OrthoNormalBasis.cone_sample(direction=direction_from_intersection_to_light, cone_theta=CONE_THETA, u=u / self.lighting_samples, v=v / self.lighting_samples)
                 ray = Ray(origin=origin, direction=wobbled_direction)
                 illumination += self.calculate_illumination(ray=ray, this_object=this_object, hit=object_hit)
