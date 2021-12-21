@@ -42,7 +42,7 @@ if __name__ == "__main__":
     CAMERA = Q_Vector3d(0, 0, -1.5)
     MAX_DEPTH = arguments.depth
     NUMBER_OF_LIGHTING_SAMPLES = (
-        int(math.sqrt(max(arguments.samples, 1)))
+        int(math.sqrt(max(arguments.samples**2, 1)))
     )
     CORES_TO_USE = arguments.cores
 
@@ -50,22 +50,22 @@ if __name__ == "__main__":
         # Spheres
         SpherePrimitive(
             position=Q_Vector3d(x=-1.05, y=0, z=1),
-            material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
+            material=Metal(attenuation=Q_Vector3d(0.8, 0.8, 0.8), fuzziness=0),
             radius=0.5,
-        ), 
+        ),
         SpherePrimitive(
             position=Q_Vector3d(x=0, y=0, z=1),
-            material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
+            material=Diffuse(attenuation=Q_Vector3d(0.8, 0.3, 0.3)),
             radius=0.5,
-        ), 
+        ),
         SpherePrimitive(
             position=Q_Vector3d(x=1.05, y=0, z=1),
             material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
             radius=0.5,
-        ),   
+        ),
         SpherePrimitive(
             position=Q_Vector3d(x=0, y=-100.5, z=1),
-            material=Diffuse(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
+            material=Diffuse(attenuation=Q_Vector3d(0.8, 0.8, 0)),
             radius=100,
         ),
         # SpherePrimitive(

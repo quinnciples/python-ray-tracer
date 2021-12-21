@@ -443,8 +443,44 @@ def test_Scene_nearest_intersection_with_two_object():
     assert nearest_object is not None and hit is not None and hit.distance == 40
 
 
+def test_Scene_anti_aliasing_offsets_do_not_overlap():
+    """
+    Assume a 3x3 grid
+    -------------------------
+    (1, 3) - (2, 3) - (3, 3)
+    |                       |
+    (1, 2) - (2, 2) - (3, 2)
+    |                       |
+    (1, 1) - (2, 1) - (3, 1)
+    -------------------------
+    When calculating the potential subpixels for the center pixel (2, 2),
+    valid x coordinates should be between the midpoint of this pixel
+    and its left neighbor (1.5) and right neighbor (2.5) and
+    valid y coordinates should be between the midpoint of this pixel
+    and its lower neighbor (1.5) and upper neighbor (2.5)
+    """
+    width, height = 3, 3
+    x_offset = 1
+    y_offset = 1
+    x, y = 2, 2
+    x_total, x_count, y_total, y_count = 0, 0, 0, 0
+    for _ in range(500):
+        x_coord = x + ((random.random() - 0.5) * x_offset)
+        if x_coord < x:
+            x_total += x_coord
+            x_count += 1
+        y_coord = y + ((random.random() - 0.5) * y_offset)
+        if y_coord < y:
+            y_total += y_coord
+            y_count += 1
+        # assert x >= 1.5 and x <= 2.5
+        # assert y >= 1.5 and y <= 2.5
+        # print(x_coord, y_coord)
+    print(x_total / x_count, y_total / y_count)
+
+
 if __name__ == "__main__":
-    list_of_tests = [x for x in dir() if "test_" in x]
+    list_of_tests = [x for x in dir() if "anti" in x]
     total_tests = 0
     failed_tests = 0
     for test in list_of_tests:

@@ -31,7 +31,6 @@ class Scene:
                 fail_count += 1
             return p
         self.random_unit_vectors = [random_in_unit_sphere() for _ in range(10_000)]
-        # print(fail_count)
 
     def nearest_intersection(self, ray: Ray) -> tuple[Primitive, Hit]:  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
         min_distance = math.inf
@@ -92,20 +91,18 @@ class Scene:
         #       -------------
         ###############################
 
-        if anti_aliasing:
-            ANTI_ALIASING_X = 1 / (2 * width)
-            ANTI_ALIASING_Y = 1 / (2 * height)
-            ANTI_ALIASING_OFFSETS = {'top-left': (-1 * ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     'top': (0, ANTI_ALIASING_Y),
-                                     'top-right': (ANTI_ALIASING_X, ANTI_ALIASING_Y),
-                                     'left': (-1 * ANTI_ALIASING_X, 0),
-                                     'center': (0, 0),
-                                     'right': (ANTI_ALIASING_X, 0),
-                                     'bottom-left': (-1 * ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y),
-                                     'bottom': (0, -1 * ANTI_ALIASING_Y),
-                                     'bottom-right': (ANTI_ALIASING_X, - 1 * ANTI_ALIASING_Y)}
-        else:
-            ANTI_ALIASING_OFFSETS = {'center': (0, 0)}
+        ANTI_ALIASING_OFFSETS = {'center': (0, 0)}
+        if lighting_samples > 1:
+            ANTI_ALIASING_X = 1 / (width)
+            ANTI_ALIASING_Y = 1 / (height)
+            ADDTL_OFFSETS = {
+                _ + 1: (
+                    (random.random() - 0.5) * ANTI_ALIASING_X,
+                    (random.random() - 0.5) * ANTI_ALIASING_Y,
+                )
+                for _ in range(lighting_samples - 1)
+            }
+            ANTI_ALIASING_OFFSETS = {**ANTI_ALIASING_OFFSETS, **ADDTL_OFFSETS}
 
         if not row_range:
             starting_row = 0
@@ -121,6 +118,9 @@ class Scene:
                 xx = Q_map(value=x, lower_limit=0, upper_limit=width - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)
                 color_value = Q_Vector3d(0, 0, 0)
                 for num_samples, offset in enumerate(ANTI_ALIASING_OFFSETS):
+                    # TODO
+                    # Change AA to be randomly processed according to num_samples
+                    # (random.random() - 0.5) * AA offset?
                     # Initial setup
                     pixel = Q_Vector3d(xx + ANTI_ALIASING_OFFSETS[offset][0], yy + ANTI_ALIASING_OFFSETS[offset][1], 0)
                     origin = self.camera_position
@@ -146,8 +146,12 @@ class Scene:
             t = 0.5 * (unit_direction.y + 1.0)
             return (1.0 - t) * Q_Vector3d(1.0, 1.0, 1.0) + t * Q_Vector3d(0.5, 0.7, 1.0)  # color_value
         else:
-            target = object_hit.position + object_hit.normal_to_surface + random.choice(self.random_unit_vectors)
-            return self.trace_ray(ray=Ray(origin=object_hit.position + (object_hit.normal_to_surface * 0.0001), direction=(target - object_hit.position).normalized()), max_depth=max_depth, current_depth=current_depth + 1, reflection=0) * 0.5
+            color_value, next_ray = nearest_object.material.handle_ray_intersection(incoming_ray=ray, object_hit=object_hit)
+            # target = object_hit.position + object_hit.normal_to_surface + random.choice(self.random_unit_vectors)
+            if next_ray is None:
+                return color_value if color_value else Q_Vector3d(0, 0, 0)
+            else:
+                return color_value * self.trace_ray(ray=next_ray, max_depth=max_depth, current_depth=current_depth + 1, reflection=0)
 
 
         shifted_point = object_hit.position + object_hit.normal_to_surface * 1e-5
