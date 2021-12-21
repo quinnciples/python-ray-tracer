@@ -473,14 +473,14 @@ def test_Scene_anti_aliasing_offsets_do_not_overlap():
         if y_coord < y:
             y_total += y_coord
             y_count += 1
-        # assert x >= 1.5 and x <= 2.5
-        # assert y >= 1.5 and y <= 2.5
+        assert x >= 1.5 and x <= 2.5
+        assert y >= 1.5 and y <= 2.5
         # print(x_coord, y_coord)
-    print(x_total / x_count, y_total / y_count)
+    # print(x_total / x_count, y_total / y_count)
 
 
 if __name__ == "__main__":
-    list_of_tests = [x for x in dir() if "anti" in x]
+    list_of_tests = [x for x in dir() if "test_" in x]
     total_tests = 0
     failed_tests = 0
     for test in list_of_tests:
