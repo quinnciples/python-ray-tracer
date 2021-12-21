@@ -138,7 +138,7 @@ class Scene:
         #         p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
         #     return p
         nearest_object, object_hit = self.nearest_intersection(ray=ray)
-        color_value = Q_Vector3d(0, 0, 0)
+        # color_value = Q_Vector3d(0, 0, 0)
 
         # Did we even hit anything?
         if nearest_object is None or current_depth > max_depth:
@@ -146,9 +146,9 @@ class Scene:
             t = 0.5 * (unit_direction.y + 1.0)
             return (1.0 - t) * Q_Vector3d(1.0, 1.0, 1.0) + t * Q_Vector3d(0.5, 0.7, 1.0)  # color_value
         else:
-            
             target = object_hit.position + object_hit.normal_to_surface + random.choice(self.random_unit_vectors)
-            return self.trace_ray(ray=Ray(origin=object_hit.position + (object_hit.normal_to_surface * 0.001), direction=(target - object_hit.position).normalized()), max_depth=max_depth, current_depth=current_depth + 1, reflection=0) * 0.5
+            return self.trace_ray(ray=Ray(origin=object_hit.position + (object_hit.normal_to_surface * 0.0001), direction=(target - object_hit.position).normalized()), max_depth=max_depth, current_depth=current_depth + 1, reflection=0) * 0.5
+
 
         shifted_point = object_hit.position + object_hit.normal_to_surface * 1e-5
         direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()

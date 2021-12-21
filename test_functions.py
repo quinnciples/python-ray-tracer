@@ -1,4 +1,5 @@
 import math
+import random
 
 import numpy as np
 
@@ -145,6 +146,46 @@ def test_OrthoNormalBasis_from_single_axes():
     check_is_basis(
         onb=OrthoNormalBasis.fromZ(Q_Vector3d.get_normalized_vector(x=-0.211944, y=-0.495198, z=0.842530))
     )  # Zrnd
+
+
+def test_OrthoNormalBasis_random_vectors():
+    THRESHOLD = 0.02
+
+    def random_in_unit_sphere() -> Q_Vector3d:
+        p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
+        while p.length_squared >= 1.0:
+            p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
+        return p
+
+    source_direction = Q_Vector3d(0, 1, 0).normalized()
+    random_unit_vectors = [(source_direction + random_in_unit_sphere()).normalized() for _ in range(100_000)]
+    v_min_x = min(x.x for x in random_unit_vectors)
+    v_max_x = max(x.x for x in random_unit_vectors)
+    # v_min_y = min(x.y for x in random_unit_vectors)
+    # v_max_y = max(x.y for x in random_unit_vectors)
+    v_min_z = min(x.z for x in random_unit_vectors)
+    v_max_z = max(x.z for x in random_unit_vectors)
+    # print()
+    # print(min_x, max_x, min_y, max_y, min_z, max_z)
+
+    CONE_THETA = math.pi / 2.0
+    ortho_random_vectors = []
+    source_direction = Q_Vector3d(0, 1, 0).normalized()
+    for u_ in range(333):
+        for v_ in range(333):
+            ortho_random_vectors.append(OrthoNormalBasis.cone_sample(direction=source_direction, cone_theta=CONE_THETA, u=u_ / 333, v=v_ / 333))
+    o_min_x = min(x.x for x in ortho_random_vectors)
+    o_max_x = max(x.x for x in ortho_random_vectors)
+    # o_min_y = min(x.y for x in ortho_random_vectors)
+    # o_max_y = max(x.y for x in ortho_random_vectors)
+    o_min_z = min(x.z for x in ortho_random_vectors)
+    o_max_z = max(x.z for x in ortho_random_vectors)
+    # print(min_x, max_x, min_y, max_y, min_z, max_z)
+    assert math.fabs(o_min_x - v_min_x) <= THRESHOLD
+    assert math.fabs(o_max_x - v_max_x) <= THRESHOLD
+    # assert math.fabs(o_min_y - v_min_y) <= THRESHOLD
+    assert math.fabs(o_min_z - v_min_z) <= THRESHOLD
+    assert math.fabs(o_max_z - v_max_z) <= THRESHOLD
 
 
 def test_Q_buckets_function():

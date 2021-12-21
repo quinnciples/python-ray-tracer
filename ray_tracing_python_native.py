@@ -16,6 +16,7 @@ from QFunctions.Q_Functions import Q_Vector3d
 from Scene import Scene
 from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
+from Material import Material, Metal, Diffuse
 
 if __name__ == "__main__":
     # Initialize parser
@@ -48,21 +49,23 @@ if __name__ == "__main__":
     objects = [
         # Spheres
         SpherePrimitive(
-            position=Q_Vector3d(x=0, y=0, z=1),
-            ambient=Q_Vector3d(0.5, 0.5, 0.5),
-            diffuse=Q_Vector3d(0.7, 0, 0.7),
-            specular=Q_Vector3d(1.0, 0, 1.0),
-            shininess=20,
-            reflection=0,
+            position=Q_Vector3d(x=-1.05, y=0, z=1),
+            material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
             radius=0.5,
-        ),  # Magenta right
+        ), 
+        SpherePrimitive(
+            position=Q_Vector3d(x=0, y=0, z=1),
+            material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
+            radius=0.5,
+        ), 
+        SpherePrimitive(
+            position=Q_Vector3d(x=1.05, y=0, z=1),
+            material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
+            radius=0.5,
+        ),   
         SpherePrimitive(
             position=Q_Vector3d(x=0, y=-100.5, z=1),
-            ambient=Q_Vector3d(0.5, 0.5, 0.5),
-            diffuse=Q_Vector3d(0.7, 0, 0.7),
-            specular=Q_Vector3d(1.0, 0, 1.0),
-            shininess=20,
-            reflection=0,
+            material=Diffuse(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
             radius=100,
         ),
         # SpherePrimitive(

@@ -1,6 +1,7 @@
 import math
 
 from Hit import Hit
+from Material import Diffuse, Material, Metal
 from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
@@ -15,9 +16,9 @@ class SpherePrimitive(Primitive):
 
     EPSILON = 1e-5  # 0.000000001
 
-    def __init__(self, position: Q_Vector3d, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float, radius: float, emission: Q_Vector3d = Q_Vector3d(0, 0, 0)):
+    def __init__(self, position: Q_Vector3d, material: Material, radius: float):
         # self.center = center
-        Primitive.__init__(self, position=position, ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
+        Primitive.__init__(self, position=position, material=material)
         self.radius = float(radius)
 
     def intersect(self, ray: Ray) -> Hit:

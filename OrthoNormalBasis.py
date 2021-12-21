@@ -86,7 +86,7 @@ class OrthoNormalBasis:
 
 if __name__ == "__main__":
     vector = Q_Vector3d(0, 1, 0)
-    pi_div = 24.0
+    pi_div = 4.0
     print(f"Starting Vector: {vector}")
     for u_val in range(0, 101, 10):
         cone_theta = math.pi / float(pi_div)
