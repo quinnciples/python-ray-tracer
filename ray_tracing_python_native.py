@@ -38,7 +38,7 @@ if __name__ == "__main__":
     HEIGHT = arguments.height
     SCALE = 1
     ANTI_ALIASING = arguments.anti_aliasing_enabled
-    CAMERA = Q_Vector3d(0, 0.1, -1.5)
+    CAMERA = Q_Vector3d(0, 0, -1.5)
     MAX_DEPTH = arguments.depth
     NUMBER_OF_LIGHTING_SAMPLES = (
         int(math.sqrt(max(arguments.samples, 1)))
@@ -48,62 +48,71 @@ if __name__ == "__main__":
     objects = [
         # Spheres
         SpherePrimitive(
-            position=Q_Vector3d(x=5, y=-5, z=30),
-            ambient=Q_Vector3d(0.1, 0, 0.1),
+            position=Q_Vector3d(x=0, y=0, z=1),
+            ambient=Q_Vector3d(0.5, 0.5, 0.5),
             diffuse=Q_Vector3d(0.7, 0, 0.7),
             specular=Q_Vector3d(1.0, 0, 1.0),
             shininess=20,
-            reflection=0.1,
-            radius=6.0,
+            reflection=0,
+            radius=0.5,
         ),  # Magenta right
         SpherePrimitive(
-            position=Q_Vector3d(x=-8, y=0, z=30),
-            ambient=Q_Vector3d(0, 0.1, 0.1),
-            diffuse=Q_Vector3d(0, 0.7, 0.7),
-            specular=Q_Vector3d(0, 1.0, 1.0),
-            shininess=40,
-            reflection=0.2,
-            radius=4.0,
-        ),  # Cyan left
-        SpherePrimitive(
-            position=Q_Vector3d(x=16, y=12, z=50),
-            ambient=Q_Vector3d(0.1, 0.1, 0),
-            diffuse=Q_Vector3d(0.7, 0.7, 0),
-            specular=Q_Vector3d(1.0, 1.0, 1.0),
-            shininess=60,
-            reflection=0.3,
-            radius=8.0,
-        ),  # Yellow
-        SpherePrimitive(
-            position=Q_Vector3d(x=-10, y=12, z=40),
-            ambient=Q_Vector3d(0.1, 0.1, 0.1),
-            diffuse=Q_Vector3d(0.7, 0.7, 0.7),
-            specular=Q_Vector3d(1.0, 1.0, 1.0),
-            shininess=80,
-            reflection=0.4,
-            radius=8.0,
-        ),  # White
-        # Bottom plane
-        PlanePrimitive(
-            front_bottom_left=Q_Vector3d(x=-500, y=-15, z=-10),
-            rear_top_right=Q_Vector3d(500, -15, 250),
-            ambient=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
-            diffuse=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
-            specular=Q_Vector3d(1.0, 1.0, 1.0),
-            shininess=100,
-            reflection=0.4,
-        ),
-        # Light
-        PlanePrimitive(
-            front_bottom_left=Q_Vector3d(x=0, y=20, z=10),
-            rear_top_right=Q_Vector3d(x=10, y=30, z=10),
-            ambient=Q_Vector3d(1.0, 1.0, 1.0),
-            diffuse=Q_Vector3d(1.0, 1.0, 1.0),
-            specular=Q_Vector3d(1.0, 1.0, 1.0),
-            shininess=100,
+            position=Q_Vector3d(x=0, y=-100.5, z=1),
+            ambient=Q_Vector3d(0.5, 0.5, 0.5),
+            diffuse=Q_Vector3d(0.7, 0, 0.7),
+            specular=Q_Vector3d(1.0, 0, 1.0),
+            shininess=20,
             reflection=0,
-            emission=Q_Vector3d(0.5, 0.5, 0.5),
-        ),  # 0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0
+            radius=100,
+        ),
+        # SpherePrimitive(
+        #     position=Q_Vector3d(x=-8, y=0, z=30),
+        #     ambient=Q_Vector3d(0, 0.1, 0.1),
+        #     diffuse=Q_Vector3d(0, 0.7, 0.7),
+        #     specular=Q_Vector3d(0, 1.0, 1.0),
+        #     shininess=40,
+        #     reflection=0.2,
+        #     radius=4.0,
+        # ),  # Cyan left
+        # SpherePrimitive(
+        #     position=Q_Vector3d(x=16, y=12, z=50),
+        #     ambient=Q_Vector3d(0.1, 0.1, 0),
+        #     diffuse=Q_Vector3d(0.7, 0.7, 0),
+        #     specular=Q_Vector3d(1.0, 1.0, 1.0),
+        #     shininess=60,
+        #     reflection=0.3,
+        #     radius=8.0,
+        # ),  # Yellow
+        # SpherePrimitive(
+        #     position=Q_Vector3d(x=-10, y=12, z=40),
+        #     ambient=Q_Vector3d(0.1, 0.1, 0.1),
+        #     diffuse=Q_Vector3d(0.7, 0.7, 0.7),
+        #     specular=Q_Vector3d(1.0, 1.0, 1.0),
+        #     shininess=80,
+        #     reflection=0.4,
+        #     radius=8.0,
+        # ),  # White
+        # # Bottom plane
+        # PlanePrimitive(
+        #     front_bottom_left=Q_Vector3d(x=-500, y=-15, z=-10),
+        #     rear_top_right=Q_Vector3d(500, -15, 250),
+        #     ambient=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
+        #     diffuse=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
+        #     specular=Q_Vector3d(1.0, 1.0, 1.0),
+        #     shininess=100,
+        #     reflection=0.4,
+        # ),
+        # Light
+        # PlanePrimitive(
+        #     front_bottom_left=Q_Vector3d(x=0, y=20, z=10),
+        #     rear_top_right=Q_Vector3d(x=10, y=30, z=10),
+        #     ambient=Q_Vector3d(1.0, 1.0, 1.0),
+        #     diffuse=Q_Vector3d(1.0, 1.0, 1.0),
+        #     specular=Q_Vector3d(1.0, 1.0, 1.0),
+        #     shininess=100,
+        #     reflection=0,
+        #     emission=Q_Vector3d(0.5, 0.5, 0.5),
+        # ),  # 0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0
         # CubePrimitive(front_bottom_left=Q_Vector3d(x=0, y=20, z=5), rear_top_right=Q_Vector3d(x=10, y=30, z=15), ambient=Q_Vector3d(1.0, 1.0, 1.0), diffuse=Q_Vector3d(1.0, 1.0, 1.0), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0, emission=Q_Vector3d(0.5, 0.5, 0.5)),  # 0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0
     ]
 

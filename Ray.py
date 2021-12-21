@@ -16,3 +16,6 @@ class Ray:
 
     def position_at_distance(self, distance: float) -> Q_Vector3d:
         return self.origin + self.direction * distance
+
+    def __str__(self):
+        return '{Origin=' + str(self.origin) + ', Direction=' + str(self.direction) + '}'

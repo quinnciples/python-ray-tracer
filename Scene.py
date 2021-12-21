@@ -4,6 +4,7 @@ from multiprocessing import Pool, cpu_count
 
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 from OrthoNormalBasis import OrthoNormalBasis
 from QFunctions.Q_Functions import Q_buckets, Q_map, Q_Vector3d
@@ -17,6 +18,20 @@ class Scene:
         self.camera_position = camera_position
         self.objects = objects
         self.lights = lights
+        self.generate_random_unit_vectors()
+
+    def generate_random_unit_vectors(self) -> None:
+        fail_count = 0
+
+        def random_in_unit_sphere() -> Q_Vector3d:
+            nonlocal fail_count
+            p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
+            while p.length_squared >= 1.0:
+                p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
+                fail_count += 1
+            return p
+        self.random_unit_vectors = [random_in_unit_sphere() for _ in range(10_000)]
+        # print(fail_count)
 
     def nearest_intersection(self, ray: Ray) -> tuple[Primitive, Hit]:  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
         min_distance = math.inf
@@ -117,12 +132,23 @@ class Scene:
         return image
 
     def trace_ray(self, ray: Ray, max_depth: int, current_depth: int = 1, reflection: float = 1.0) -> Q_Vector3d:
+        # def random_in_unit_sphere() -> Q_Vector3d:
+        #     p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
+        #     while p.length_squared >= 1.0:
+        #         p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
+        #     return p
         nearest_object, object_hit = self.nearest_intersection(ray=ray)
         color_value = Q_Vector3d(0, 0, 0)
 
         # Did we even hit anything?
-        if nearest_object is None:
-            return color_value
+        if nearest_object is None or current_depth > max_depth:
+            unit_direction = ray.direction.normalized()
+            t = 0.5 * (unit_direction.y + 1.0)
+            return (1.0 - t) * Q_Vector3d(1.0, 1.0, 1.0) + t * Q_Vector3d(0.5, 0.7, 1.0)  # color_value
+        else:
+            
+            target = object_hit.position + object_hit.normal_to_surface + random.choice(self.random_unit_vectors)
+            return self.trace_ray(ray=Ray(origin=object_hit.position + (object_hit.normal_to_surface * 0.001), direction=(target - object_hit.position).normalized()), max_depth=max_depth, current_depth=current_depth + 1, reflection=0) * 0.5
 
         shifted_point = object_hit.position + object_hit.normal_to_surface * 1e-5
         direction_from_intersection_to_light = (self.lights[0]['position'] - shifted_point).normalized()
