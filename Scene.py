@@ -147,10 +147,10 @@ class Scene:
             return (1.0 - t) * Q_Vector3d(1.0, 1.0, 1.0) + t * Q_Vector3d(0.5, 0.7, 1.0)  # color_value
         else:
             color_value, next_ray = nearest_object.material.handle_ray_intersection(incoming_ray=ray, object_hit=object_hit)
-            # target = object_hit.position + object_hit.normal_to_surface + random.choice(self.random_unit_vectors)
             if next_ray is None:
                 return color_value if color_value else Q_Vector3d(0, 0, 0)
             else:
+                # next_ray = Ray(next_ray.origin + next_ray.direction.normalized() * 1e-5, next_ray.direction)
                 return color_value * self.trace_ray(ray=next_ray, max_depth=max_depth, current_depth=current_depth + 1, reflection=0)
 
 
