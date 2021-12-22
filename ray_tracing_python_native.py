@@ -49,7 +49,7 @@ if __name__ == "__main__":
     objects = [
         # Spheres
         SpherePrimitive(
-            position=Q_Vector3d(x=-1.05, y=0, z=1),
+            position=Q_Vector3d(x=-1.0, y=0, z=1),
             # material=Metal(attenuation=Q_Vector3d(0.8, 0.8, 0.8), fuzziness=0),
             material=Glass(refreaction_index=1.5),
             radius=0.5,
@@ -60,7 +60,7 @@ if __name__ == "__main__":
             radius=0.5,
         ),
         SpherePrimitive(
-            position=Q_Vector3d(x=1.05, y=0, z=1),
+            position=Q_Vector3d(x=1.0, y=0, z=1),
             material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
             radius=0.5,
         ),

@@ -61,7 +61,10 @@ class SpherePrimitive(Primitive):
         hitPosition = ray.origin + (ray.direction * t)
         normal = (hitPosition - self.position).normalized()
         inside = normal.dot_product(ray.direction) > 0
-        if inside:
-            normal = normal * -1
-        # return t, normal
+
+        # It is necessary to comment out the normal flipping code
+        # below due to how the material code works for refraction!
+        # if inside:
+        #     normal = normal * -1
+
         return Hit(position=ray.position_at_distance(t), distance=t, normal_to_surface=normal, is_inside=inside)
