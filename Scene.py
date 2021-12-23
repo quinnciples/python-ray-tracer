@@ -22,16 +22,7 @@ class Scene:
         self.generate_random_unit_vectors()
 
     def generate_random_unit_vectors(self) -> None:
-        fail_count = 0
-
-        def random_in_unit_sphere() -> Q_Vector3d:
-            nonlocal fail_count
-            p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
-            while p.length_squared >= 1.0:
-                p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
-                fail_count += 1
-            return p
-        self.random_unit_vectors = [random_in_unit_sphere() for _ in range(10_000)]
+        self.random_unit_vectors = [Q_Vector3d.random_in_unit_sphere() for _ in range(10_000)]
 
     def nearest_intersection(self, ray: Ray) -> tuple[Primitive, Hit]:  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
         min_distance = math.inf

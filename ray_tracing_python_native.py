@@ -6,8 +6,8 @@
 # https://www.youtube.com/watch?v=HbzTFCsiWcg
 # TODO - Create Material
 #           Static variables for colors
-import pyjion
-pyjion.enable()
+# import pyjion
+# pyjion.enable()
 import argparse
 import math
 
@@ -19,9 +19,6 @@ from QFunctions.Q_Functions import Q_Vector3d
 from Scene import Scene
 from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
-
-
-
 
 if __name__ == "__main__":
 
@@ -48,7 +45,7 @@ if __name__ == "__main__":
     CAMERA = Q_Vector3d(0, 0, -1)
     MAX_DEPTH = arguments.depth
     NUMBER_OF_LIGHTING_SAMPLES = (
-        int(math.sqrt(max(arguments.samples**2, 1)))
+        int(max(arguments.samples, 1))
     )
     CORES_TO_USE = arguments.cores
 
