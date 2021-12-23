@@ -9,7 +9,7 @@
 import pyjion
 pyjion.enable()
 import argparse
-import math
+import random
 
 from Camera import Camera
 from CubePrimitive import CubePrimitive
@@ -49,86 +49,125 @@ if __name__ == "__main__":
     )
     CORES_TO_USE = arguments.cores
 
-    objects = [
-        # Spheres
-        SpherePrimitive(
-            position=Q_Vector3d(x=-1.1, y=0, z=2),
-            material=Glass(refraction_index=1.5),
-            radius=0.5,
-        ),
-        # SpherePrimitive(
-        #     position=Q_Vector3d(x=-1.0, y=0, z=1),
-        #     material=Glass(refraction_index=1.5),
-        #     radius=-0.35,
-        # ),
-        SpherePrimitive(
-            position=Q_Vector3d(x=0, y=0, z=2),
-            material=Diffuse(attenuation=Q_Vector3d(0.1, 0.2, 0.5)),
-            radius=0.5,
-        ),
-        SpherePrimitive(
-            position=Q_Vector3d(x=1.1, y=0, z=2),
-            material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
-            radius=0.5,
-        ),
-        SpherePrimitive(
-            position=Q_Vector3d(x=0, y=-100.5, z=2),
-            material=Diffuse(attenuation=Q_Vector3d(0.8, 0.8, 0)),
-            radius=100,
-        ),
-        # SpherePrimitive(
-        #     position=Q_Vector3d(x=-8, y=0, z=30),
-        #     ambient=Q_Vector3d(0, 0.1, 0.1),
-        #     diffuse=Q_Vector3d(0, 0.7, 0.7),
-        #     specular=Q_Vector3d(0, 1.0, 1.0),
-        #     shininess=40,
-        #     reflection=0.2,
-        #     radius=4.0,
-        # ),  # Cyan left
-        # SpherePrimitive(
-        #     position=Q_Vector3d(x=16, y=12, z=50),
-        #     ambient=Q_Vector3d(0.1, 0.1, 0),
-        #     diffuse=Q_Vector3d(0.7, 0.7, 0),
-        #     specular=Q_Vector3d(1.0, 1.0, 1.0),
-        #     shininess=60,
-        #     reflection=0.3,
-        #     radius=8.0,
-        # ),  # Yellow
-        # SpherePrimitive(
-        #     position=Q_Vector3d(x=-10, y=12, z=40),
-        #     ambient=Q_Vector3d(0.1, 0.1, 0.1),
-        #     diffuse=Q_Vector3d(0.7, 0.7, 0.7),
-        #     specular=Q_Vector3d(1.0, 1.0, 1.0),
-        #     shininess=80,
-        #     reflection=0.4,
-        #     radius=8.0,
-        # ),  # White
-        # # Bottom plane
-        # PlanePrimitive(
-        #     front_bottom_left=Q_Vector3d(x=-500, y=-15, z=-10),
-        #     rear_top_right=Q_Vector3d(500, -15, 250),
-        #     ambient=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
-        #     diffuse=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
-        #     specular=Q_Vector3d(1.0, 1.0, 1.0),
-        #     shininess=100,
-        #     reflection=0.4,
-        # ),
-        # Light
-        # PlanePrimitive(
-        #     front_bottom_left=Q_Vector3d(x=0, y=20, z=10),
-        #     rear_top_right=Q_Vector3d(x=10, y=30, z=10),
-        #     ambient=Q_Vector3d(1.0, 1.0, 1.0),
-        #     diffuse=Q_Vector3d(1.0, 1.0, 1.0),
-        #     specular=Q_Vector3d(1.0, 1.0, 1.0),
-        #     shininess=100,
-        #     reflection=0,
-        #     emission=Q_Vector3d(0.5, 0.5, 0.5),
-        # ),  # 0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0
-        # CubePrimitive(front_bottom_left=Q_Vector3d(x=0, y=20, z=5), rear_top_right=Q_Vector3d(x=10, y=30, z=15), ambient=Q_Vector3d(1.0, 1.0, 1.0), diffuse=Q_Vector3d(1.0, 1.0, 1.0), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0, emission=Q_Vector3d(0.5, 0.5, 0.5)),  # 0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0
-    ]
+    # objects = [
+    #     # Spheres
+    #     SpherePrimitive(
+    #         position=Q_Vector3d(x=-1.1, y=0, z=2),
+    #         material=Glass(refraction_index=1.5),
+    #         radius=0.5,
+    #     ),
+    #     # SpherePrimitive(
+    #     #     position=Q_Vector3d(x=-1.0, y=0, z=1),
+    #     #     material=Glass(refraction_index=1.5),
+    #     #     radius=-0.35,
+    #     # ),
+    #     SpherePrimitive(
+    #         position=Q_Vector3d(x=0, y=0, z=2),
+    #         material=Diffuse(attenuation=Q_Vector3d(0.1, 0.2, 0.5)),
+    #         radius=0.5,
+    #     ),
+    #     SpherePrimitive(
+    #         position=Q_Vector3d(x=1.1, y=0, z=2),
+    #         material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
+    #         radius=0.5,
+    #     ),
+    #     SpherePrimitive(
+    #         position=Q_Vector3d(x=0, y=-100.5, z=2),
+    #         material=Diffuse(attenuation=Q_Vector3d(0.8, 0.8, 0)),
+    #         radius=100,
+    #     ),
+    #     # SpherePrimitive(
+    #     #     position=Q_Vector3d(x=-8, y=0, z=30),
+    #     #     ambient=Q_Vector3d(0, 0.1, 0.1),
+    #     #     diffuse=Q_Vector3d(0, 0.7, 0.7),
+    #     #     specular=Q_Vector3d(0, 1.0, 1.0),
+    #     #     shininess=40,
+    #     #     reflection=0.2,
+    #     #     radius=4.0,
+    #     # ),  # Cyan left
+    #     # SpherePrimitive(
+    #     #     position=Q_Vector3d(x=16, y=12, z=50),
+    #     #     ambient=Q_Vector3d(0.1, 0.1, 0),
+    #     #     diffuse=Q_Vector3d(0.7, 0.7, 0),
+    #     #     specular=Q_Vector3d(1.0, 1.0, 1.0),
+    #     #     shininess=60,
+    #     #     reflection=0.3,
+    #     #     radius=8.0,
+    #     # ),  # Yellow
+    #     # SpherePrimitive(
+    #     #     position=Q_Vector3d(x=-10, y=12, z=40),
+    #     #     ambient=Q_Vector3d(0.1, 0.1, 0.1),
+    #     #     diffuse=Q_Vector3d(0.7, 0.7, 0.7),
+    #     #     specular=Q_Vector3d(1.0, 1.0, 1.0),
+    #     #     shininess=80,
+    #     #     reflection=0.4,
+    #     #     radius=8.0,
+    #     # ),  # White
+    #     # # Bottom plane
+    #     # PlanePrimitive(
+    #     #     front_bottom_left=Q_Vector3d(x=-500, y=-15, z=-10),
+    #     #     rear_top_right=Q_Vector3d(500, -15, 250),
+    #     #     ambient=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
+    #     #     diffuse=Q_Vector3d(243.0 / 255.0, 114.0 / 255.0, 32.0 / 255.0),
+    #     #     specular=Q_Vector3d(1.0, 1.0, 1.0),
+    #     #     shininess=100,
+    #     #     reflection=0.4,
+    #     # ),
+    #     # Light
+    #     # PlanePrimitive(
+    #     #     front_bottom_left=Q_Vector3d(x=0, y=20, z=10),
+    #     #     rear_top_right=Q_Vector3d(x=10, y=30, z=10),
+    #     #     ambient=Q_Vector3d(1.0, 1.0, 1.0),
+    #     #     diffuse=Q_Vector3d(1.0, 1.0, 1.0),
+    #     #     specular=Q_Vector3d(1.0, 1.0, 1.0),
+    #     #     shininess=100,
+    #     #     reflection=0,
+    #     #     emission=Q_Vector3d(0.5, 0.5, 0.5),
+    #     # ),  # 0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0
+    #     # CubePrimitive(front_bottom_left=Q_Vector3d(x=0, y=20, z=5), rear_top_right=Q_Vector3d(x=10, y=30, z=15), ambient=Q_Vector3d(1.0, 1.0, 1.0), diffuse=Q_Vector3d(1.0, 1.0, 1.0), specular=Q_Vector3d(1.0, 1.0, 1.0), shininess=100, reflection=0, emission=Q_Vector3d(0.5, 0.5, 0.5)),  # 0xad / 255.0, 0xd8 / 255.0, 0xe6 / 255.0
+    # ]
 
+    objects = []
+    for a in range(-11, 11):
+        for b in range(-11, 11):
+            choose_mat = random.random()
+            # Check for collissions
+            fail = True
+            while fail:
+                fail = False
+                center = Q_Vector3d(a + 0.9 * random.random(), 0.2, b + 0.9 * random.random())
+                for sphere in objects:
+                    if (sphere.position - center).length < 0.21:
+                        # print('Overlap detected. Redo...')
+                        fail = True
+                        break
+
+            if (center - Q_Vector3d(4, 0.2, 0)).length > 0.9:
+                if choose_mat < 0.75:
+                    # Diffuse material
+                    # Random color
+                    color_value = Q_Vector3d(random.random(), random.random(), random.random())
+                    objects.append(SpherePrimitive(position=center, material=Diffuse(attenuation=color_value), radius=0.2))
+                    # print('Added diffuse...')
+                elif choose_mat < 0.95:
+                    # Metal
+                    color_value = Q_Vector3d(random.random() / 2 + 0.5, random.random() / 2 + 0.5, random.random() / 2 + 0.5)
+                    fuzz = 0  # random.random()
+                    objects.append(SpherePrimitive(position=center, material=Metal(attenuation=color_value, fuzziness=fuzz), radius=0.2))
+                    # print('Added metal...')
+                else:
+                    # Glass
+                    objects.append(SpherePrimitive(position=center, material=Glass(refraction_index=1.5), radius=0.2))
+                    # print('Added glass...')
+
+    objects.append(SpherePrimitive(position=Q_Vector3d(0, -1000.1, 0), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)), radius=1000))
+    objects.append(SpherePrimitive(position=Q_Vector3d(0, 1, 0), material=Glass(refraction_index=1.5), radius=1.0))
+    objects.append(SpherePrimitive(position=Q_Vector3d(-4, 1, 0), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0))
+    objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 0), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0), radius=1.0))
+
+    print(f'{len(objects)} added to scene...')
     lights = [{"position": Q_Vector3d(5, 25, 10)}]
-    cam = Camera(lookfrom=Q_Vector3d(1, 0.75, 0), lookat=Q_Vector3d(0, 0, 2), vup=Q_Vector3d(0, -1, 0), vfov=45, aspect_ratio=float(WIDTH) / float(HEIGHT))
+    cam = Camera(lookfrom=Q_Vector3d(13, 2, -3), lookat=Q_Vector3d(0, 0, 0), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
     scene = Scene(camera_position=CAMERA, objects=objects, lights=lights)
 
     scene.multi_render(
