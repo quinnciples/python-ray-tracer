@@ -137,7 +137,7 @@ if __name__ == "__main__":
                 fail = False
                 center = Q_Vector3d(a + 0.9 * random.random(), 0.2, b + 0.9 * random.random())
                 for sphere in objects:
-                    if (sphere.position - center).length < 0.21:
+                    if (sphere.position - center).length < 0.41 or (center - Q_Vector3d(4, 0.2, 0)).length <= 0.9:
                         # print('Overlap detected. Redo...')
                         fail = True
                         break
@@ -160,7 +160,7 @@ if __name__ == "__main__":
                     objects.append(SpherePrimitive(position=center, material=Glass(refraction_index=1.5), radius=0.2))
                     # print('Added glass...')
 
-    objects.append(SpherePrimitive(position=Q_Vector3d(0, -1000.1, 0), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)), radius=1000))
+    objects.append(SpherePrimitive(position=Q_Vector3d(0, -1000.0001, 0), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)), radius=1000))
     objects.append(SpherePrimitive(position=Q_Vector3d(0, 1, 0), material=Glass(refraction_index=1.5), radius=1.0))
     objects.append(SpherePrimitive(position=Q_Vector3d(-4, 1, 0), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0))
     objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 0), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0), radius=1.0))
