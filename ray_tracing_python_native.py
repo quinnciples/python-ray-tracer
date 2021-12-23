@@ -6,7 +6,8 @@
 # https://www.youtube.com/watch?v=HbzTFCsiWcg
 # TODO - Create Material
 #           Static variables for colors
-
+# import pyjion
+# pyjion.enable()
 import argparse
 import math
 
@@ -18,7 +19,11 @@ from Scene import Scene
 from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
 
+
+
+
 if __name__ == "__main__":
+
     # Initialize parser
     parser = argparse.ArgumentParser()
 
@@ -53,11 +58,11 @@ if __name__ == "__main__":
             material=Glass(refraction_index=1.5),
             radius=0.5,
         ),
-        SpherePrimitive(
-            position=Q_Vector3d(x=-1.0, y=0, z=1),
-            material=Glass(refraction_index=1.5),
-            radius=-0.35,
-        ),
+        # SpherePrimitive(
+        #     position=Q_Vector3d(x=-1.0, y=0, z=1),
+        #     material=Glass(refraction_index=1.5),
+        #     radius=-0.35,
+        # ),
         SpherePrimitive(
             position=Q_Vector3d(x=0, y=0, z=1),
             material=Diffuse(attenuation=Q_Vector3d(0.1, 0.2, 0.5)),
