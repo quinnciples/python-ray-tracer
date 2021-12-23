@@ -1,16 +1,17 @@
 import math
+import random
 from datetime import datetime as dt
 from multiprocessing import Pool, cpu_count
 
 import matplotlib.pyplot as plt
 import numpy as np
-import random
 
+from Camera import Camera
+from Hit import Hit
 from OrthoNormalBasis import OrthoNormalBasis
+from Primitive import Primitive
 from QFunctions.Q_Functions import Q_buckets, Q_map, Q_Vector3d
 from Ray import Ray
-from Primitive import Primitive
-from Hit import Hit
 
 
 class Scene:
@@ -56,8 +57,9 @@ class Scene:
                     pic.write(f"{int(col[0] * 255)} {int(col[1] * 255)} {int(col[2] * 255)} ")
                 pic.write("\n")
 
-    def multi_render(self, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
+    def multi_render(self, camera: Camera, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
         number_of_buckets = 10
+        self.camera = camera
         cores_to_use = max(cores_to_use, 1) if cores_to_use != 0 else cpu_count()
         pool = Pool(processes=cores_to_use)
         arguments = [(width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
@@ -111,27 +113,29 @@ class Scene:
             starting_row = row_range['start']
             ending_row = row_range['end']
 
+        # cam = Camera(lookfrom=self.camera_position, lookat=Q_Vector3d(0, 0, 0), vup=Q_Vector3d(0, -1, 0), vfov=45, aspect_ratio=float(width) / float(height))
+        # cam = Camera(lookfrom=Q_Vector3d(2, 0.75, 0), lookat=Q_Vector3d(0, 0, 2), vup=Q_Vector3d(0, -1, 0), vfov=45, aspect_ratio=float(width) / float(height))
+
         for y in range(starting_row, ending_row):
             print(f'{y + 1}/{ending_row}', end='\n')
-            yy = Q_map(value=-y, lower_limit=-(height - 1), upper_limit=0, scaled_lower_limit=SCREEN_DIMS['bottom'], scaled_upper_limit=SCREEN_DIMS['top'])
+            # yy = Q_map(value=-y, lower_limit=-(height - 1), upper_limit=0, scaled_lower_limit=SCREEN_DIMS['bottom'], scaled_upper_limit=SCREEN_DIMS['top'])
+            yy = y / height
             for x in range(width):
-                xx = Q_map(value=x, lower_limit=0, upper_limit=width - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)
+                # xx = Q_map(value=x, lower_limit=0, upper_limit=width - 1, scaled_lower_limit=-1.0, scaled_upper_limit=1.0)
+                xx = x / width
                 color_value = Q_Vector3d(0, 0, 0)
-                for num_samples, offset in enumerate(ANTI_ALIASING_OFFSETS):
-                    # TODO
-                    # Change AA to be randomly processed according to num_samples
-                    # (random.random() - 0.5) * AA offset?
+                for offset_x, offset_y in ANTI_ALIASING_OFFSETS.values():
                     # Initial setup
-                    pixel = Q_Vector3d(xx + ANTI_ALIASING_OFFSETS[offset][0], yy + ANTI_ALIASING_OFFSETS[offset][1], 0)
-                    origin = self.camera_position
-                    direction = (pixel - origin).normalized()
-                    color_value += self.trace_ray(ray=Ray(origin=origin, direction=direction), max_depth=max_depth)
+                    # pixel = Q_Vector3d(xx + ANTI_ALIASING_OFFSETS[offset][0], yy + ANTI_ALIASING_OFFSETS[offset][1], 0)
+                    # origin = self.camera_position
+                    # direction = (pixel - origin).normalized()
+                    color_value += self.trace_ray(ray=self.camera.get_ray_from_camera(xx + offset_x, yy + offset_y), max_depth=max_depth)
 
-                image[y, x] = (color_value * (1 / (num_samples + 1))).clamp(0, 1).to_tuple()
+                image[y, x] = (color_value * (1 / lighting_samples)).clamp(0, 1).to_tuple()
 
         return image
 
-    def trace_ray(self, ray: Ray, max_depth: int, current_depth: int = 1, reflection: float = 1.0) -> Q_Vector3d:
+    def trace_ray(self, ray: Ray, max_depth: int, current_depth: int = 1) -> Q_Vector3d:
         # def random_in_unit_sphere() -> Q_Vector3d:
         #     p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
         #     while p.length_squared >= 1.0:
@@ -151,7 +155,7 @@ class Scene:
                 return color_value if color_value else Q_Vector3d(0, 0, 0)
             else:
                 # next_ray = Ray(next_ray.origin + next_ray.direction.normalized() * 1e-5, next_ray.direction)
-                return color_value * self.trace_ray(ray=next_ray, max_depth=max_depth, current_depth=current_depth + 1, reflection=0)
+                return color_value * self.trace_ray(ray=next_ray, max_depth=max_depth, current_depth=current_depth + 1)
 
 
         shifted_point = object_hit.position + object_hit.normal_to_surface * 1e-5

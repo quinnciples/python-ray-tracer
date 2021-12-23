@@ -6,11 +6,12 @@
 # https://www.youtube.com/watch?v=HbzTFCsiWcg
 # TODO - Create Material
 #           Static variables for colors
-# import pyjion
-# pyjion.enable()
+import pyjion
+pyjion.enable()
 import argparse
 import math
 
+from Camera import Camera
 from CubePrimitive import CubePrimitive
 from Material import Diffuse, Glass, Material, Metal
 from PlanePrimitive import PlanePrimitive
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     HEIGHT = arguments.height
     SCALE = 1
     ANTI_ALIASING = arguments.anti_aliasing_enabled
-    CAMERA = Q_Vector3d(0, 0, -1.5)
+    CAMERA = Q_Vector3d(0, 0, -1)
     MAX_DEPTH = arguments.depth
     NUMBER_OF_LIGHTING_SAMPLES = (
         int(math.sqrt(max(arguments.samples**2, 1)))
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     objects = [
         # Spheres
         SpherePrimitive(
-            position=Q_Vector3d(x=-1.0, y=0, z=1),
+            position=Q_Vector3d(x=-1.1, y=0, z=2),
             material=Glass(refraction_index=1.5),
             radius=0.5,
         ),
@@ -64,17 +65,17 @@ if __name__ == "__main__":
         #     radius=-0.35,
         # ),
         SpherePrimitive(
-            position=Q_Vector3d(x=0, y=0, z=1),
+            position=Q_Vector3d(x=0, y=0, z=2),
             material=Diffuse(attenuation=Q_Vector3d(0.1, 0.2, 0.5)),
             radius=0.5,
         ),
         SpherePrimitive(
-            position=Q_Vector3d(x=1.0, y=0, z=1),
+            position=Q_Vector3d(x=1.1, y=0, z=2),
             material=Metal(attenuation=Q_Vector3d(0.8, 0.6, 0.2)),
             radius=0.5,
         ),
         SpherePrimitive(
-            position=Q_Vector3d(x=0, y=-100.5, z=1),
+            position=Q_Vector3d(x=0, y=-100.5, z=2),
             material=Diffuse(attenuation=Q_Vector3d(0.8, 0.8, 0)),
             radius=100,
         ),
@@ -130,9 +131,11 @@ if __name__ == "__main__":
     ]
 
     lights = [{"position": Q_Vector3d(5, 25, 10)}]
+    cam = Camera(lookfrom=Q_Vector3d(1, 0.75, 0), lookat=Q_Vector3d(0, 0, 2), vup=Q_Vector3d(0, -1, 0), vfov=45, aspect_ratio=float(WIDTH) / float(HEIGHT))
     scene = Scene(camera_position=CAMERA, objects=objects, lights=lights)
 
     scene.multi_render(
+        camera=cam,
         width=WIDTH * SCALE,
         height=HEIGHT * SCALE,
         max_depth=MAX_DEPTH,
