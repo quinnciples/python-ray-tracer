@@ -6,8 +6,8 @@
 # https://www.youtube.com/watch?v=HbzTFCsiWcg
 # TODO - Create Material
 #           Static variables for colors
-# import pyjion
-# pyjion.enable()
+import pyjion
+pyjion.enable()
 import argparse
 import math
 
@@ -30,9 +30,9 @@ if __name__ == "__main__":
     parser.add_argument("--height", help="Height", type=int)
     parser.add_argument("--depth", help="Maximum Depth", type=int)
     parser.add_argument("--samples", help="Number of Lighting Samples", type=int)
-    parser.add_argument(
-        "--anti-aliasing-enabled", help="Use Anti Aliasing", action="store_true"
-    )
+    # parser.add_argument(
+    #     "--anti-aliasing-enabled", help="Use Anti Aliasing", action="store_true"
+    # )
     parser.add_argument("--cores", help="Number of Cores to Use", type=int)
 
     # Read arguments from command line
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     WIDTH = arguments.width
     HEIGHT = arguments.height
     SCALE = 1
-    ANTI_ALIASING = arguments.anti_aliasing_enabled
+    ANTI_ALIASING = True  # arguments.anti_aliasing_enabled
     CAMERA = Q_Vector3d(0, 0, -1)
     MAX_DEPTH = arguments.depth
     NUMBER_OF_LIGHTING_SAMPLES = (

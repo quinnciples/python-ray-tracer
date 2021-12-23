@@ -50,10 +50,9 @@ class Scene:
 
     def multi_render(self, camera: Camera, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
         number_of_buckets = 10
-        self.camera = camera
         cores_to_use = max(cores_to_use, 1) if cores_to_use != 0 else cpu_count()
         pool = Pool(processes=cores_to_use)
-        arguments = [(width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
+        arguments = [(camera, width, height, max_depth, anti_aliasing, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
         start_time = dt.now()
         print(f'Render started @ {width}x{height}x{lighting_samples}spp {"with anti aliasing " if anti_aliasing else ""}using {cores_to_use} cores at {start_time}.')
         print()
@@ -67,7 +66,7 @@ class Scene:
         plt.imsave('image.png', image)
         Scene.write_ppm_file(image_data=image.tolist())
 
-    def render(self, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}) -> np.array:
+    def render(self, camera: Camera, width: int, height: int, max_depth: int = 1, anti_aliasing: bool = False, lighting_samples: int = 1, row_range: dict = {}) -> np.array:
         image = np.zeros((height, width, 3))
         self.lighting_samples = lighting_samples
         SCREEN_RATIO = float(width) / float(height)
@@ -120,7 +119,7 @@ class Scene:
                     # pixel = Q_Vector3d(xx + ANTI_ALIASING_OFFSETS[offset][0], yy + ANTI_ALIASING_OFFSETS[offset][1], 0)
                     # origin = self.camera_position
                     # direction = (pixel - origin).normalized()
-                    color_value += self.trace_ray(ray=self.camera.get_ray_from_camera(xx + offset_x, yy + offset_y), max_depth=max_depth)
+                    color_value += self.trace_ray(ray=camera.get_ray_from_camera(xx + offset_x, yy + offset_y), max_depth=max_depth)
 
                 image[y, x] = (color_value * (1 / lighting_samples)).clamp(0, 1).to_tuple()
 
