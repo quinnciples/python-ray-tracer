@@ -6,8 +6,9 @@
 # https://www.youtube.com/watch?v=HbzTFCsiWcg
 # TODO - Create Material
 #           Static variables for colors
-import pyjion
-pyjion.enable()
+# import pyjion
+# pyjion.config(pgc=False)
+# pyjion.enable()
 import argparse
 import random
 
@@ -40,8 +41,6 @@ if __name__ == "__main__":
 
     WIDTH = arguments.width
     HEIGHT = arguments.height
-    SCALE = 1
-    ANTI_ALIASING = True  # arguments.anti_aliasing_enabled
     CAMERA = Q_Vector3d(0, 0, -1)
     MAX_DEPTH = arguments.depth
     NUMBER_OF_LIGHTING_SAMPLES = (
@@ -138,44 +137,44 @@ if __name__ == "__main__":
                 center = Q_Vector3d(a + 0.9 * random.random(), 0.2, b + 0.9 * random.random())
                 for sphere in objects:
                     if (sphere.position - center).length < 0.41 or (center - Q_Vector3d(4, 0.2, 0)).length <= 0.9:
-                        # print('Overlap detected. Redo...')
                         fail = True
                         break
 
             if (center - Q_Vector3d(4, 0.2, 0)).length > 0.9:
-                if choose_mat < 0.75:
+                if choose_mat < 0.65:
                     # Diffuse material
                     # Random color
                     color_value = Q_Vector3d(random.random(), random.random(), random.random())
                     objects.append(SpherePrimitive(position=center, material=Diffuse(attenuation=color_value), radius=0.2))
-                    # print('Added diffuse...')
-                elif choose_mat < 0.95:
+                elif choose_mat < 0.90:
                     # Metal
-                    color_value = Q_Vector3d(random.random() / 2 + 0.5, random.random() / 2 + 0.5, random.random() / 2 + 0.5)
-                    fuzz = 0  # random.random()
-                    objects.append(SpherePrimitive(position=center, material=Metal(attenuation=color_value, fuzziness=fuzz), radius=0.2))
-                    # print('Added metal...')
+                    color_value = Q_Vector3d(random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5)
+                    fuzz = random.random() / 2.0
+                    fuzz = 0 if fuzz < 0.15 else fuzz
+                    objects.append(SpherePrimitive(position=center, material=Metal(attenuation=color_value, fuzziness=float(fuzz)), radius=0.2))
                 else:
                     # Glass
                     objects.append(SpherePrimitive(position=center, material=Glass(refraction_index=1.5), radius=0.2))
-                    # print('Added glass...')
 
     objects.append(SpherePrimitive(position=Q_Vector3d(0, -1000.0001, 0), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)), radius=1000))
     objects.append(SpherePrimitive(position=Q_Vector3d(0, 1, 0), material=Glass(refraction_index=1.5), radius=1.0))
     objects.append(SpherePrimitive(position=Q_Vector3d(-4, 1, 0), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0))
-    objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 0), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0), radius=1.0))
+    objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 0), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0), radius=1.0))
 
     print(f'{len(objects)} added to scene...')
-    lights = [{"position": Q_Vector3d(5, 25, 10)}]
+    print('*' * 40)
+    print()
+    with open('render_settings.txt', 'w') as f_out:
+        for o in objects:
+            f_out.write(repr(o) + '\n')
     cam = Camera(lookfrom=Q_Vector3d(13, 2, -3), lookat=Q_Vector3d(0, 0, 0), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
-    scene = Scene(camera_position=CAMERA, objects=objects, lights=lights)
+    scene = Scene(camera_position=CAMERA, objects=objects)
 
-    scene.multi_render(
-        camera=cam,
-        width=WIDTH * SCALE,
-        height=HEIGHT * SCALE,
-        max_depth=MAX_DEPTH,
-        anti_aliasing=ANTI_ALIASING,
-        lighting_samples=NUMBER_OF_LIGHTING_SAMPLES,
-        cores_to_use=CORES_TO_USE,
-    )
+    # scene.multi_render(
+    #     camera=cam,
+    #     width=WIDTH,
+    #     height=HEIGHT,
+    #     max_depth=MAX_DEPTH,
+    #     lighting_samples=NUMBER_OF_LIGHTING_SAMPLES,
+    #     cores_to_use=CORES_TO_USE,
+    # )

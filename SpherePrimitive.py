@@ -21,6 +21,9 @@ class SpherePrimitive(Primitive):
         Primitive.__init__(self, position=position, material=material)
         self.radius = float(radius)
 
+    def __repr__(self):
+        return f'SpherePrimitive(position={repr(self.position)}, material={repr(self.material)})'
+
     def intersect(self, ray: Ray) -> Hit:
         b = 2 * ray.direction.dot_product(other_vector=(ray.origin - self.position))
         # c = ((ray.origin - self.position).length_squared) - (self.radius ** 2)

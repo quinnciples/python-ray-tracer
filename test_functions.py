@@ -475,12 +475,24 @@ def test_Scene_anti_aliasing_offsets_do_not_overlap():
             y_count += 1
         assert x >= 1.5 and x <= 2.5
         assert y >= 1.5 and y <= 2.5
-        # print(x_coord, y_coord)
-    # print(x_total / x_count, y_total / y_count)
+
+
+def test_front_vectors():
+    origin = Q_Vector3d(0, 0, 0)
+    towards = Q_Vector3d(0, 0, 5)
+    hit_object = Q_Vector3d(0, 0, 10)
+    hitable_object = Q_Vector3d(3, 10, 10)
+    behind_object = Q_Vector3d(0, 0, -2)
+    missable_object = Q_Vector3d(-1, 5, -6)
+
+    assert ((towards - origin).dot_product(hit_object - origin)) > 0
+    assert ((towards - origin).dot_product(hitable_object - origin)) > 0
+    assert ((towards - origin).dot_product(behind_object - origin)) < 0
+    assert ((towards - origin).dot_product(missable_object - origin)) < 0
 
 
 if __name__ == "__main__":
-    list_of_tests = [x for x in dir() if "test_" in x]
+    list_of_tests = [x for x in dir() if "test" in x]
     total_tests = 0
     failed_tests = 0
     for test in list_of_tests:
@@ -493,7 +505,7 @@ if __name__ == "__main__":
         except Exception as e:
             failed_tests += 1
             print(" !! FAILED !!")
-            print(str(e))
+            print(e)
 
     print()
     print(f"{total_tests} tests run, {total_tests - failed_tests} tests passed, {failed_tests} tests failed.")
