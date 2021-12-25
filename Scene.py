@@ -8,33 +8,68 @@ import numpy as np
 
 from Camera import Camera
 from Hit import Hit
-from OrthoNormalBasis import OrthoNormalBasis
 from Primitive import Primitive
-from QFunctions.Q_Functions import Q_buckets, Q_map, Q_Vector3d
+from QFunctions.Q_Functions import Q_buckets, Q_Vector3d
 from Ray import Ray
+from AABB import AABB
 
 
 class Scene:
+    OFFSET = 1e-5
+
     def __init__(self, camera_position: Q_Vector3d, objects: list = []):
         self.camera_position = camera_position
         self.objects = objects
-        self.generate_random_unit_vectors()
+        self.bounding_boxes = []
 
-    def generate_random_unit_vectors(self) -> None:
-        self.random_unit_vectors = [Q_Vector3d.random_in_unit_sphere() for _ in range(10_000)]
+    def generate_bounding_boxes(self):
+        print('Allocating objects to bounding boxes... ')
+        # min_x = min(obj.position.x for obj in self.objects)
+        max_x = max(math.fabs(obj.position.x) for obj in self.objects)
+        # min_y = min(obj.position.y for obj in self.objects)
+        max_y = max(math.fabs(obj.position.y) for obj in self.objects)
+        # min_z = min(obj.position.z for obj in self.objects)
+        max_z = max(math.fabs(obj.position.z) for obj in self.objects)
+        max_dimension = max(max_x, max_y, max_z) + Scene.OFFSET
+        box_positions = {'left_top_front': (-1, 0, 0), 'right_top_front': (0, 0, 0),
+                         'left_bottom_front': (-1, -1, 0), 'right_bottom_front': (0, -1, 0),
+                         'left_top_rear': (-1, 0, -1), 'right_top_rear': (0, 0, -1),
+                         'left_bottom_rear': (-1, -1, -1), 'right_bottom_rear': (0, -1, -1)}
+        for label, dim_adjustments in box_positions.items():
+            dim_mod_x, dim_mod_y, dim_mod_z = dim_adjustments
+            bounding_box = AABB(lower_left_corner=Q_Vector3d(max_dimension * dim_mod_x - Scene.OFFSET, max_dimension * dim_mod_y - Scene.OFFSET, max_dimension * dim_mod_z - Scene.OFFSET), length=max_dimension)
+            # print(f'Created bounding box at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}')
+            self.bounding_boxes.append(bounding_box)
+
+        for obj in self.objects:
+            assigned = False
+            for bounding_box in self.bounding_boxes:
+                # print(f'Tring to assign {obj.position} to bb {bounding_box.min_coordinate} {bounding_box.max_coordinate}...')
+                # TODO
+                # Need to check if sphere radius crosses boundary
+                if obj.position.x >= bounding_box.min_coordinate.x and obj.position.x <= bounding_box.max_coordinate.x and obj.position.y >= bounding_box.min_coordinate.y and obj.position.y <= bounding_box.max_coordinate.y and obj.position.z >= bounding_box.min_coordinate.z and obj.position.z <= bounding_box.max_coordinate.z:
+                    bounding_box.add_item(obj)
+                    assigned = True
+                    # print(f'Assigning {obj.position} to bb {bounding_box.min_coordinate} {bounding_box.max_coordinate}')
+            if not assigned:
+                raise "Object does not fix in bounding box"
+        print('Done.')
 
     def nearest_intersection(self, ray: Ray) -> tuple[Primitive, Hit]:  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
         min_distance = math.inf
         obj = None
         nearest_hit = None
-        for this_object in self.objects:
-            # if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
-            #     continue
-            hit = this_object.intersect(ray=ray)
-            if hit and hit.distance < min_distance:
-                obj = this_object
-                nearest_hit = hit
-                min_distance = hit.distance
+
+        for bounding_box in self.bounding_boxes:
+            if bounding_box.intersect(ray=ray):
+                for this_object in bounding_box.items:  # self.objects:
+                    # if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
+                    #     continue
+                    hit = this_object.intersect(ray=ray)
+                    if hit and hit.distance < min_distance:
+                        obj = this_object
+                        nearest_hit = hit
+                        min_distance = hit.distance
         return obj, nearest_hit
 
     @staticmethod
