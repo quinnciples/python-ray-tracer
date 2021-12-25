@@ -83,6 +83,7 @@ if __name__ == "__main__":
     objects.append(SpherePrimitive(position=Q_Vector3d(-4, 1, 0), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0))
     objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 0), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0), radius=1.0))
 
+
     print(f'{len(objects)} added to scene...')
     print('*' * 40)
     print()

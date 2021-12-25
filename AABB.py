@@ -19,6 +19,31 @@ class AABB:
     def add_item(self, item: Primitive) -> None:
         self.items.append(item)
 
+    def get_corners(self) -> list:
+        corners = list()
+        # Left Bottom Front
+        corners.append(self.min_coordinate)
+        # Right Bottom Front
+        corners.append(Q_Vector3d(self.min_coordinate.x + self.length, self.min_coordinate.y, self.min_coordinate.z))
+        # Left Top Front
+        corners.append(Q_Vector3d(self.min_coordinate.x, self.min_coordinate.y + self.length, self.min_coordinate.z))
+        # Right Top Front
+        corners.append(Q_Vector3d(self.min_coordinate.x + self.length, self.min_coordinate.y + self.length, self.min_coordinate.z))
+
+        # Left Bottom Rear
+        corners.append(Q_Vector3d(self.min_coordinate.x, self.min_coordinate.y, self.min_coordinate.z + self.length))
+        # Right Bottom Rear
+        corners.append(Q_Vector3d(self.min_coordinate.x + self.length, self.min_coordinate.y, self.min_coordinate.z + self.length))
+        # Left Top Rear
+        corners.append(Q_Vector3d(self.min_coordinate.x, self.min_coordinate.y + self.length, self.min_coordinate.z + self.length))
+        # Right Top Rear
+        corners.append(Q_Vector3d(self.min_coordinate.x + self.length, self.min_coordinate.y + self.length, self.min_coordinate.z + self.length))
+
+        return corners
+
+    def split(self) -> list:
+        pass
+
     def intersect(self, ray: Ray) -> bool:
         # Check if ray is originating within this AABB
         # if (
@@ -36,6 +61,7 @@ class AABB:
         LEFT = -1
         MIDDLE = 0
         RIGHT = 1
+        intersection_point = Q_Vector3d(0, 0, 0)
 
         for dim in ('x', 'y', 'z'):
             if ray.origin.__getattribute__(dim) < self.min_coordinate.__getattribute__(dim):
@@ -50,6 +76,7 @@ class AABB:
                 quadrant[dim] = MIDDLE
 
         if inside:
+            intersection_point = ray.origin
             return True
 
         # Calculate T distances to candidate planes
@@ -73,7 +100,17 @@ class AABB:
         for dim in ('x', 'y', 'z'):
             if which_plane != dim:
                 coord = ray.origin.__getattribute__(dim) + maxT.__getattribute__(which_plane) * ray.direction.__getattribute__(dim)
+                intersection_point.__setattr__(dim, coord)
                 if coord < self.min_coordinate.__getattribute__(dim) or coord > self.max_coordinate.__getattribute__(dim):
                     return False
+            else:
+                coord = candidate_plane[dim]
+                intersection_point.__setattr__(dim, coord)
 
         return True  # ray hits box
+
+
+if __name__ == '__main__':
+    box = AABB(Q_Vector3d(0, 0, 0), length=1)
+    for corner in box.get_corners():
+        print(repr(corner))
