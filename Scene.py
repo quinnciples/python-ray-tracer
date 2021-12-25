@@ -1,3 +1,4 @@
+import copy
 import math
 import random
 from datetime import datetime as dt
@@ -23,7 +24,7 @@ class Scene:
         self.bounding_boxes = []
 
     def generate_bounding_boxes(self):
-        print('Allocating objects to bounding boxes... ')
+        print("Allocating objects to bounding boxes... ")
         # min_x = min(obj.position.x for obj in self.objects)
         max_x = max(math.fabs(obj.position.x) for obj in self.objects)
         # min_y = min(obj.position.y for obj in self.objects)
@@ -31,14 +32,31 @@ class Scene:
         # min_z = min(obj.position.z for obj in self.objects)
         max_z = max(math.fabs(obj.position.z) for obj in self.objects)
         max_dimension = max(max_x, max_y, max_z) + Scene.OFFSET
-        box_positions = {'left_top_front': (-1, 0, 0), 'right_top_front': (0, 0, 0),
-                         'left_bottom_front': (-1, -1, 0), 'right_bottom_front': (0, -1, 0),
-                         'left_top_rear': (-1, 0, -1), 'right_top_rear': (0, 0, -1),
-                         'left_bottom_rear': (-1, -1, -1), 'right_bottom_rear': (0, -1, -1)}
+        box_positions = {
+            "left_top_front": (-1, 0, 0),
+            "right_top_front": (0, 0, 0),
+            "left_bottom_front": (-1, -1, 0),
+            "right_bottom_front": (0, -1, 0),
+            "left_top_rear": (-1, 0, -1),
+            "right_top_rear": (0, 0, -1),
+            "left_bottom_rear": (-1, -1, -1),
+            "right_bottom_rear": (0, -1, -1),
+        }
         for label, dim_adjustments in box_positions.items():
             dim_mod_x, dim_mod_y, dim_mod_z = dim_adjustments
-            bounding_box = AABB(lower_left_corner=Q_Vector3d(max_dimension * dim_mod_x - Scene.OFFSET, max_dimension * dim_mod_y - Scene.OFFSET, max_dimension * dim_mod_z - Scene.OFFSET), length=max_dimension)
-            # print(f'Created bounding box at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}')
+            bounding_box = None
+            bounding_box = AABB(
+                lower_left_corner=Q_Vector3d(
+                    max_dimension * dim_mod_x - Scene.OFFSET,
+                    max_dimension * dim_mod_y - Scene.OFFSET,
+                    max_dimension * dim_mod_z - Scene.OFFSET,
+                ),
+                length=max_dimension,
+                name=label,
+            )
+            print(
+                f"Created bounding box {label} at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}"
+            )
             self.bounding_boxes.append(bounding_box)
 
         for obj in self.objects:
@@ -47,21 +65,64 @@ class Scene:
                 # print(f'Tring to assign {obj.position} to bb {bounding_box.min_coordinate} {bounding_box.max_coordinate}...')
                 # TODO
                 # Need to check if sphere radius crosses boundary
-                if obj.position.x >= bounding_box.min_coordinate.x and obj.position.x <= bounding_box.max_coordinate.x and obj.position.y >= bounding_box.min_coordinate.y and obj.position.y <= bounding_box.max_coordinate.y and obj.position.z >= bounding_box.min_coordinate.z and obj.position.z <= bounding_box.max_coordinate.z:
+                if (
+                    (
+                        bounding_box.min_coordinate.x <= obj.position.x <= bounding_box.max_coordinate.x
+                        or bounding_box.min_coordinate.x
+                        <= (obj.position.x - obj.radius)
+                        <= bounding_box.max_coordinate.x
+                        or bounding_box.min_coordinate.x
+                        <= (obj.position.x + obj.radius)
+                        <= bounding_box.max_coordinate.x
+                    )
+                    and (
+                        bounding_box.min_coordinate.y <= obj.position.y <= bounding_box.max_coordinate.y
+                        or bounding_box.min_coordinate.y
+                        <= (obj.position.y - obj.radius)
+                        <= bounding_box.max_coordinate.y
+                        or bounding_box.min_coordinate.y
+                        <= (obj.position.y + obj.radius)
+                        <= bounding_box.max_coordinate.y
+                    )
+                    and (
+                        bounding_box.min_coordinate.z <= obj.position.z <= bounding_box.max_coordinate.z
+                        or bounding_box.min_coordinate.z
+                        <= (obj.position.z - obj.radius)
+                        <= bounding_box.max_coordinate.z
+                        or bounding_box.min_coordinate.z
+                        <= (obj.position.z + obj.radius)
+                        <= bounding_box.max_coordinate.z
+                    )
+                ):
                     bounding_box.add_item(obj)
                     assigned = True
-                    # print(f'Assigning {obj.position} to bb {bounding_box.min_coordinate} {bounding_box.max_coordinate}')
+                    print(
+                        f"Assigning {obj.position} to bb {bounding_box.name} because it is inside {bounding_box.min_coordinate} {bounding_box.max_coordinate}"
+                    )
             if not assigned:
                 raise "Object does not fix in bounding box"
-        print('Done.')
+        print("Done.")
+        print()
+        print("Summary")
+        for bounding_box in self.bounding_boxes:
+            print(f"{bounding_box.name} has {len(bounding_box.items)} items.")
 
-    def nearest_intersection(self, ray: Ray) -> tuple[Primitive, Hit]:  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
+    def nearest_intersection(
+        self, ray: Ray
+    ) -> tuple[
+        Primitive, Hit
+    ]:  # Could this be optimized by asking "does a ray of length(this_distance so far) intersect this object" ?
         min_distance = math.inf
         obj = None
         nearest_hit = None
+        boxes_hit, objects_checked = 0, 0
+        boxes = []
 
         for bounding_box in self.bounding_boxes:
             if bounding_box.intersect(ray=ray):
+                boxes_hit += 1
+                objects_checked += len(bounding_box.items)
+                boxes.append(bounding_box.name)
                 for this_object in bounding_box.items:  # self.objects:
                     # if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
                     #     continue
@@ -70,6 +131,7 @@ class Scene:
                         obj = this_object
                         nearest_hit = hit
                         min_distance = hit.distance
+        # print(f'Hit {boxes_hit} boxes and checked {objects_checked} items... {" ".join([_ for _ in boxes])}')
         return obj, nearest_hit
 
     @staticmethod
@@ -84,22 +146,33 @@ class Scene:
                     pic.write(f"{int(col[0] * 255.999)} {int(col[1] * 255.999)} {int(col[2] * 255.999)} ")
                 pic.write("\n")
 
-    def multi_render(self, camera: Camera, width: int, height: int, max_depth: int = 1, lighting_samples: int = 1, cores_to_use: int = 1) -> None:
+    def multi_render(
+        self,
+        camera: Camera,
+        width: int,
+        height: int,
+        max_depth: int = 1,
+        lighting_samples: int = 1,
+        cores_to_use: int = 1,
+    ) -> None:
         number_of_buckets = 10
         cores_to_use = max(cores_to_use, 1) if cores_to_use != 0 else cpu_count()
         pool = Pool(processes=cores_to_use)
-        arguments = [(camera, width, height, max_depth, lighting_samples, {'start': start, 'end': end}) for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)]
+        arguments = [
+            (camera, width, height, max_depth, lighting_samples, {"start": start, "end": end})
+            for start, end in Q_buckets(number_of_items=height, number_of_buckets=number_of_buckets)
+        ]
         start_time = dt.now()
-        print(f'Render started @ {width}x{height}x{lighting_samples}spp using {cores_to_use} cores at {start_time}.')
+        print(f"Render started @ {width}x{height}x{lighting_samples}spp using {cores_to_use} cores at {start_time}.")
         print()
         output = [pool.apply_async(self.render, args=(*arg,)) for arg in arguments]
         results = [o.get() for o in output]
-        print(f'Render completed in {dt.now() - start_time}.')
-        print('Saving image...')
+        print(f"Render completed in {dt.now() - start_time}.")
+        print("Saving image...")
         image = np.zeros((height, width, 3))
         for result in results:
             image += result
-        plt.imsave('image.png', image)
+        plt.imsave("image.png", image)
         Scene.write_ppm_file(image_data=image.tolist())
 
     def generate_anti_aliasing_offsets(self, width: int, height: int, number_of_samples: int) -> dict:
@@ -114,13 +187,14 @@ class Scene:
         #       -------------
         ###############################
 
-        ANTI_ALIASING_OFFSETS = {'center': (0, 0)}
+        ANTI_ALIASING_OFFSETS = {"center": (0, 0)}
         ADDTL_OFFSETS = {}
         if number_of_samples > 1:
             ANTI_ALIASING_X = 1 / width
             ANTI_ALIASING_Y = 1 / height
             ADDTL_OFFSETS = {
-                _ + 1: (
+                _
+                + 1: (
                     (random.random() - 0.5) * ANTI_ALIASING_X,
                     (random.random() - 0.5) * ANTI_ALIASING_Y,
                 )
@@ -128,27 +202,40 @@ class Scene:
             }
         return {**ANTI_ALIASING_OFFSETS, **ADDTL_OFFSETS}
 
-    def render(self, camera: Camera, width: int, height: int, max_depth: int = 1, lighting_samples: int = 1, row_range: dict = {}) -> np.array:
+    def render(
+        self,
+        camera: Camera,
+        width: int,
+        height: int,
+        max_depth: int = 1,
+        lighting_samples: int = 1,
+        row_range: dict = {},
+    ) -> np.array:
         image = np.zeros((height, width, 3))
         # self.lighting_samples = lighting_samples
 
-        ANTI_ALIASING_OFFSETS = self.generate_anti_aliasing_offsets(width=width, height=height, number_of_samples=lighting_samples)
+        ANTI_ALIASING_OFFSETS = self.generate_anti_aliasing_offsets(
+            width=width, height=height, number_of_samples=lighting_samples
+        )
 
         if not row_range:
             starting_row = 0
             ending_row = height
         else:
-            starting_row = row_range['start']
-            ending_row = row_range['end']
+            starting_row = row_range["start"]
+            ending_row = row_range["end"]
 
         for y in range(starting_row, ending_row):
-            print(f'{y + 1}/{ending_row}', end='\n')
+            print(f"{y + 1}/{ending_row}", end="\n")
             yy = y / height
             for x in range(width):
                 xx = x / width
                 color_value = Q_Vector3d(0, 0, 0)
                 for offset_x, offset_y in ANTI_ALIASING_OFFSETS.values():
-                    color_value += self.trace_ray(ray=camera.get_ray_from_camera(xx + offset_x, yy + offset_y), max_depth=max_depth)
+                    # print(f'Checking {x}, {y}...')
+                    color_value += self.trace_ray(
+                        ray=camera.get_ray_from_camera(xx + offset_x, yy + offset_y), max_depth=max_depth
+                    )
 
                 image[y, x] = (color_value * (1 / lighting_samples)).clamp(0, 1).to_tuple()
 
@@ -166,7 +253,9 @@ class Scene:
         if nearest_object is None or current_depth > max_depth:
             return environment_color(ray=ray)
         else:
-            color_value, next_ray = nearest_object.material.handle_ray_intersection(incoming_ray=ray, object_hit=object_hit)
+            color_value, next_ray = nearest_object.material.handle_ray_intersection(
+                incoming_ray=ray, object_hit=object_hit
+            )
             if next_ray is None:
                 return color_value if color_value else Q_Vector3d(0, 0, 0)
             else:

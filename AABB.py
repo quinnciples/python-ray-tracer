@@ -6,14 +6,15 @@ from Ray import Ray
 
 
 class AABB:
-    def __init__(self, lower_left_corner: Q_Vector3d, length: float, items: list = []):
+    def __init__(self, lower_left_corner: Q_Vector3d, length: float, name: str = ''):
         self.min_coordinate = lower_left_corner
         self.length = length
         self.max_coordinate = Q_Vector3d(
             lower_left_corner.x + length, lower_left_corner.y + length, lower_left_corner.z + length
         )
 
-        self.items = items
+        self.items = list()
+        self.name = name
 
     def add_item(self, item: Primitive) -> None:
         self.items.append(item)
