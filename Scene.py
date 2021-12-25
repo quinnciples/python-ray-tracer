@@ -28,8 +28,8 @@ class Scene:
         obj = None
         nearest_hit = None
         for this_object in self.objects:
-            if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
-                continue
+            # if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
+            #     continue
             hit = this_object.intersect(ray=ray)
             if hit and hit.distance < min_distance:
                 obj = this_object
