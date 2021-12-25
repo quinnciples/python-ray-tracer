@@ -167,14 +167,23 @@ if __name__ == "__main__":
     with open('render_settings.txt', 'w') as f_out:
         for o in objects:
             f_out.write(repr(o) + '\n')
+
+    # min_x = min(obj.position.x for obj in objects)
+    # max_x = max(obj.position.x for obj in objects)
+    # min_y = min(obj.position.y for obj in objects)
+    # max_y = max(obj.position.y for obj in objects)
+    # min_z = min(obj.position.z for obj in objects)
+    # max_z = max(obj.position.z for obj in objects)
+    # print('x', min_x, max_x, 'y', min_y, max_y, 'z', min_z, max_z)
+
     cam = Camera(lookfrom=Q_Vector3d(13, 2, -3), lookat=Q_Vector3d(0, 0, 0), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
     scene = Scene(camera_position=CAMERA, objects=objects)
 
-    scene.multi_render(
-        camera=cam,
-        width=WIDTH,
-        height=HEIGHT,
-        max_depth=MAX_DEPTH,
-        lighting_samples=NUMBER_OF_LIGHTING_SAMPLES,
-        cores_to_use=CORES_TO_USE,
-    )
+    # scene.multi_render(
+    #     camera=cam,
+    #     width=WIDTH,
+    #     height=HEIGHT,
+    #     max_depth=MAX_DEPTH,
+    #     lighting_samples=NUMBER_OF_LIGHTING_SAMPLES,
+    #     cores_to_use=CORES_TO_USE,
+    # )

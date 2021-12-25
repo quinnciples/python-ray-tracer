@@ -10,7 +10,7 @@ from Ray import Ray
 from Scene import Scene
 from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
-
+from AABB import AABB
 
 def test_Q_Vector3d_constructor():
     vector = Q_Vector3d(0, 1, 2)
@@ -491,8 +491,45 @@ def test_front_vectors():
     assert ((towards - origin).dot_product(missable_object - origin)) < 0
 
 
+def test_AABB_constructor():
+    bounding_box = AABB(Q_Vector3d(-5, -5, -5), length=10)
+    assert bounding_box.min_coordinate == Q_Vector3d(-5, -5, -5)
+    assert bounding_box.length == 10
+    assert bounding_box.max_coordinate == Q_Vector3d(5, 5, 5)
+
+
+def test_AABB_intersection_with_ray_originating_from_within_AABB():
+    bounding_box = AABB(Q_Vector3d(-5, -5, -5), length=10)
+    ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 0, 2).normalized())
+    result = bounding_box.intersect(ray=ray)
+    assert result is True
+    ray = Ray(origin=Q_Vector3d(50, 30, 80), direction=Q_Vector3d(0, 0, 2).normalized())
+    result = bounding_box.intersect(ray=ray)
+    assert result is False
+    # Testing ray originating from box perimiter
+    ray = Ray(origin=Q_Vector3d(-5, -5, -5), direction=Q_Vector3d(3, 4, 5).normalized())
+    result = bounding_box.intersect(ray=ray)
+    assert result is True
+
+
+def test_AABB_intersection_with_ray_originating_from_outside_AABB():
+    bounding_box = AABB(Q_Vector3d(-5, -5, -5), length=10)
+    # Ray starts on the right side of the box and moves right = miss
+    ray = Ray(origin=Q_Vector3d(20, 0, 0), direction=Q_Vector3d(1, 0, 0).normalized())
+    result = bounding_box.intersect(ray=ray)
+    assert result is False
+    # Ray starts on the right side of the box and moves left = hit
+    ray = Ray(origin=Q_Vector3d(20, 0, 0), direction=Q_Vector3d(-1, 0, 0).normalized())
+    result = bounding_box.intersect(ray=ray)
+    assert result is True
+    # Ray starts above and on the right side of the box and moves left = miss
+    ray = Ray(origin=Q_Vector3d(20, 500, 0), direction=Q_Vector3d(-1, 0, 0).normalized())
+    result = bounding_box.intersect(ray=ray)
+    assert result is False
+
+
 if __name__ == "__main__":
-    list_of_tests = [x for x in dir() if "test" in x]
+    list_of_tests = [x for x in dir() if "test_AABB" in x]
     total_tests = 0
     failed_tests = 0
     for test in list_of_tests:
