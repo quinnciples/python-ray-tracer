@@ -3,7 +3,7 @@
 from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
-
+import math
 
 class AABB:
     BOX_POSITIONS = {
@@ -74,7 +74,39 @@ class AABB:
             boxes_to_add.append(bounding_box)
         return boxes_to_add
 
-    def intersect(self, ray: Ray) -> bool:
+    def intersect(self, ray: Ray, t: float = math.inf) -> bool:
+        # https://tavianator.com/cgit/dimension.git/tree/libdimension/bvh/bvh.c#n194
+        # This is actually correct, even though it appears not to handle edge cases
+        # (ray.n.{x,y,z} == 0).  It works because the infinities that result from
+        # dividing by zero will still behave correctly in the comparisons.  Rays
+        # which are parallel to an axis and outside the box will have tmin == inf
+        # or tmax == -inf, while rays inside the box will have tmin and tmax
+        # unchanged.
+        # .n_inv = dmnsn_new_vector(1.0/ray.n.X, 1.0/ray.n.Y, 1.0/ray.n.Z)
+
+        # ray.direction = ray.direction.normalized()
+        
+        tx1 = (self.min_coordinate.x - ray.origin.x) * (1.0 / ray.direction.x)
+        tx2 = (self.max_coordinate.x - ray.origin.x) * (1.0 / ray.direction.x)  # ray.n_inv.x
+
+        tmin = min(tx1, tx2)
+        tmax = max(tx1, tx2)
+
+        ty1 = (self.min_coordinate.y - ray.origin.y) * (1.0 / ray.direction.y)
+        ty2 = (self.max_coordinate.y - ray.origin.y) * (1.0 / ray.direction.y)
+
+        tmin = max(tmin, min(ty1, ty2))
+        tmax = min(tmax, max(ty1, ty2))
+
+        tz1 = (self.min_coordinate.z - ray.origin.z) * (1.0 / ray.direction.z)  # ray.n_inv.z
+        tz2 = (self.max_coordinate.z - ray.origin.z) * (1.0 / ray.direction.z)  # ray.n_inv.z
+
+        tmin = max(tmin, min(tz1, tz2))
+        tmax = min(tmax, max(tz1, tz2))
+
+        return tmax >= max(0.0, tmin) and tmin < t
+
+    def intersection(self, ray: Ray) -> bool:
         # Check if ray is originating within this AABB
         # if (
         #     ray.origin.x >= self.min_coordinate.x

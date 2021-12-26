@@ -160,7 +160,7 @@ class Scene:
         checked_objects = set()
 
         for bounding_box in self.bounding_boxes:
-            if bounding_box.intersect(ray=ray):
+            if bounding_box.intersect(ray=ray):  # intersect
                 for this_object in bounding_box.items:  # self.objects:
                     # if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
                     #     continue
