@@ -43,7 +43,7 @@ class Scene:
                 dist_squared -= squared(S.z - C2.z)
             return dist_squared > 0
 
-        print("Allocating objects to bounding boxes... ")
+        print("Creating bounding boxes... ")
         # min_x = min(obj.position.x for obj in self.objects)
         max_x = max(math.fabs(obj.position.x) for obj in self.objects)
         # min_y = min(obj.position.y for obj in self.objects)
@@ -51,27 +51,8 @@ class Scene:
         # min_z = min(obj.position.z for obj in self.objects)
         max_z = max(math.fabs(obj.position.z) for obj in self.objects)
         max_dimension = max(max_x, max_y, max_z) + Scene.OFFSET
-        max_dimension = 11
-        # box_positions = {
-        #     "left_top_front": (-1, 0, 0),
-        #     "right_top_front": (0, 0, 0),
-        #     "left_bottom_front": (-1, -1, 0),
-        #     "right_bottom_front": (0, -1, 0),
-        #     "left_top_rear": (-1, 0, -1),
-        #     "right_top_rear": (0, 0, -1),
-        #     "left_bottom_rear": (-1, -1, -1),
-        #     "right_bottom_rear": (0, -1, -1),
-        # }
-        box_positions = {
-            "left_bottom_rear": (0, 0, 0),
-            "right_bottom_rear": (1, 0, 0),
-            "left_bottom_front": (0, 0, 1),
-            "right_bottom_front": (1, 0, 1),
-            "left_top_front": (0, 1, 1),
-            "right_top_front": (1, 1, 1),
-            "left_top_rear": (0, 1, 0),
-            "right_top_rear": (1, 1, 0),
-        }
+        max_dimension = 20
+
         # Create initial box
         bounding_box = AABB(
             lower_left_corner=Q_Vector3d(
@@ -80,55 +61,26 @@ class Scene:
             length=max_dimension * 2.0 + Scene.OFFSET,
             name="biggie",
         )
-        print(
-            f"Created bounding box {bounding_box.name} at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}"
-        )
+        # print(
+        #     f"Created bounding box {bounding_box.name} at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}"
+        # )
         initial_boxes = [bounding_box]
 
         # Recursively split existing box(es) into 8 sections
         boxes_to_add = list()
         current_level = initial_boxes
         for box in current_level:
-            starting_position = box.min_coordinate
-            new_box_length = box.length / 2.0
-            for label, dim_adjustments in box_positions.items():
-                dim_mod_x, dim_mod_y, dim_mod_z = dim_adjustments
-                box_position = Q_Vector3d(
-                    starting_position.x + dim_mod_x * new_box_length,
-                    starting_position.y + dim_mod_y * new_box_length,
-                    starting_position.z + dim_mod_z * new_box_length,
-                )
-                bounding_box = AABB(
-                    lower_left_corner=box_position,
-                    length=new_box_length,
-                    name=box.name + " " + label,
-                )
-                print(
-                    f"Created bounding box {bounding_box.name} at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}"
-                )
+            for bounding_box in box.split():
+                boxes_to_add.append(bounding_box)
+        current_level = [b for b in boxes_to_add]
+        boxes_to_add.clear()
+        for box in current_level:
+            for bounding_box in box.split():
                 boxes_to_add.append(bounding_box)
         for box in boxes_to_add:
             self.bounding_boxes.append(box)
 
-        # for label, dim_adjustments in box_positions.items():
-        #     dim_mod_x, dim_mod_y, dim_mod_z = dim_adjustments
-        #     bounding_box = None
-        #     bounding_box = AABB(
-        #         lower_left_corner=Q_Vector3d(
-        #             max_dimension * dim_mod_x - Scene.OFFSET,
-        #             max_dimension * dim_mod_y - Scene.OFFSET,
-        #             max_dimension * dim_mod_z - Scene.OFFSET,
-        #         ),
-        #         length=max_dimension,
-        #         name=label,
-        #     )
-        #     print(
-        #         f"Created bounding box {label} at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}"
-        #     )
-        #     boxes_to_add.append(bounding_box)
-        # for box in boxes_to_add:
-        #     self.bounding_boxes.append(box)
-
+        print("Allocating objects to bounding boxes... ")
         for obj in self.objects:
             assigned = False
             for bounding_box in self.bounding_boxes:
@@ -186,8 +138,16 @@ class Scene:
         print("Done.")
         print()
         print("Summary")
+        boxes_to_remove = list()
         for bounding_box in self.bounding_boxes:
-            print(f"{bounding_box.name} has {len(bounding_box.items)} items.")
+            if not bounding_box.items:
+                boxes_to_remove.append(bounding_box)
+            else:
+                print(f"{bounding_box.name} has {len(bounding_box.items)} items.")
+        for box in boxes_to_remove:
+            print(f"{bounding_box.name} has {len(bounding_box.items)} items and will be removed.")
+            self.bounding_boxes.remove(box)
+        print(f"{len(self.bounding_boxes)} boxes in this scene.")
 
     def nearest_intersection(
         self, ray: Ray
@@ -197,23 +157,20 @@ class Scene:
         min_distance = math.inf
         obj = None
         nearest_hit = None
-        # boxes_hit, objects_checked = 0, 0
-        # boxes = []
+        checked_objects = set()
 
         for bounding_box in self.bounding_boxes:
             if bounding_box.intersect(ray=ray):
-                # boxes_hit += 1
-                # objects_checked += len(bounding_box.items)
-                # boxes.append(bounding_box.name)
                 for this_object in bounding_box.items:  # self.objects:
                     # if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
                     #     continue
-                    hit = this_object.intersect(ray=ray)
-                    if hit and hit.distance < min_distance:
-                        obj = this_object
-                        nearest_hit = hit
-                        min_distance = hit.distance
-        # print(f'Hit {boxes_hit} boxes and checked {objects_checked} items... {" ".join([_ for _ in boxes])}')
+                    if this_object not in checked_objects:
+                        checked_objects.add(this_object)
+                        hit = this_object.intersect(ray=ray)
+                        if hit and hit.distance < min_distance:
+                            obj = this_object
+                            nearest_hit = hit
+                            min_distance = hit.distance
         return obj, nearest_hit
 
     @staticmethod

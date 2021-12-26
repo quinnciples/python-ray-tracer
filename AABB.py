@@ -6,6 +6,17 @@ from Ray import Ray
 
 
 class AABB:
+    BOX_POSITIONS = {
+        "left_bottom_rear": (0, 0, 0),
+        "right_bottom_rear": (1, 0, 0),
+        "left_bottom_front": (0, 0, 1),
+        "right_bottom_front": (1, 0, 1),
+        "left_top_front": (0, 1, 1),
+        "right_top_front": (1, 1, 1),
+        "left_top_rear": (0, 1, 0),
+        "right_top_rear": (1, 1, 0),
+    }
+
     def __init__(self, lower_left_corner: Q_Vector3d, length: float, name: str = ''):
         self.min_coordinate = lower_left_corner
         self.length = length
@@ -42,7 +53,26 @@ class AABB:
         return corners
 
     def split(self) -> list:
-        pass
+        boxes_to_add = list()
+        starting_position = self.min_coordinate
+        new_box_length = self.length / 2.0
+        for label, dim_adjustments in AABB.BOX_POSITIONS.items():
+            dim_mod_x, dim_mod_y, dim_mod_z = dim_adjustments
+            box_position = Q_Vector3d(
+                starting_position.x + dim_mod_x * new_box_length,
+                starting_position.y + dim_mod_y * new_box_length,
+                starting_position.z + dim_mod_z * new_box_length,
+            )
+            bounding_box = AABB(
+                lower_left_corner=box_position,
+                length=new_box_length,
+                name=self.name + " " + label,
+            )
+            # print(
+            #     f"Created bounding box {bounding_box.name} at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}"
+            # )
+            boxes_to_add.append(bounding_box)
+        return boxes_to_add
 
     def intersect(self, ray: Ray) -> bool:
         # Check if ray is originating within this AABB
@@ -108,9 +138,3 @@ class AABB:
                 intersection_point.__setattr__(dim, coord)
 
         return True  # ray hits box
-
-
-if __name__ == '__main__':
-    box = AABB(Q_Vector3d(0, 0, 0), length=1)
-    for corner in box.get_corners():
-        print(repr(corner))
