@@ -58,11 +58,11 @@ if __name__ == "__main__":
                 fail = False
                 center = Q_Vector3d(a + 0.9 * random.random(), 0.2, b + 0.9 * random.random() + 4)
                 for sphere in objects:
-                    if (sphere.position - center).length < 0.41 or (center - Q_Vector3d(4, 0.2, 0)).length <= 0.9:
+                    if (sphere.position - center).length < 0.41 or (center - Q_Vector3d(4, 0.2, 0 + 4)).length <= 0.9:
                         fail = True
                         break
 
-            if (center - Q_Vector3d(4, 0.2, 0)).length > 0.9:
+            if (center - Q_Vector3d(4, 0.2, 0 + 4)).length > 0.9:
                 if choose_mat < 0.65:
                     # Diffuse material
                     # Random color
