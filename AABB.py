@@ -52,7 +52,9 @@ class AABB:
 
         return corners
 
-    def split(self) -> list:
+    def split(self, split_level: int = 1) -> list:
+        if split_level == 0:
+            return [self]
         boxes_to_add = list()
         starting_position = self.min_coordinate
         new_box_length = self.length / 2.0
@@ -68,11 +70,12 @@ class AABB:
                 length=new_box_length,
                 name=self.name + " " + label,
             )
-            # print(
-            #     f"Created bounding box {bounding_box.name} at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}"
-            # )
             boxes_to_add.append(bounding_box)
-        return boxes_to_add
+        split_boxes = list()
+        for box_to_add in boxes_to_add:
+            for box in box_to_add.split(split_level=split_level - 1):
+                split_boxes.append(box)
+        return split_boxes
 
     def intersect(self, ray: Ray, t: float = math.inf) -> bool:
         # https://tavianator.com/cgit/dimension.git/tree/libdimension/bvh/bvh.c#n194

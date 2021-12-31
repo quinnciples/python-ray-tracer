@@ -18,8 +18,7 @@ from AABB import AABB
 class Scene:
     OFFSET = 1e-5
 
-    def __init__(self, camera_position: Q_Vector3d, objects: list = []):
-        self.camera_position = camera_position
+    def __init__(self, objects: list = []):
         self.objects = objects
         self.bounding_boxes = []
 
@@ -27,19 +26,20 @@ class Scene:
         def doesCubeIntersectSphere(C1: Q_Vector3d, C2: Q_Vector3d, S: Q_Vector3d, R: float) -> bool:
             def squared(v):
                 return v * v
+
             dist_squared = R * R
             # /* assume C1 and C2 are element-wise sorted, if not, do that now */
-            if (S.x < C1.x):
+            if S.x < C1.x:
                 dist_squared -= squared(S.x - C1.x)
-            elif (S.x > C2.x):
+            elif S.x > C2.x:
                 dist_squared -= squared(S.x - C2.x)
-            if (S.y < C1.y):
+            if S.y < C1.y:
                 dist_squared -= squared(S.y - C1.y)
-            elif (S.y > C2.y):
+            elif S.y > C2.y:
                 dist_squared -= squared(S.y - C2.y)
-            if (S.z < C1.z):
+            if S.z < C1.z:
                 dist_squared -= squared(S.z - C1.z)
-            elif (S.z > C2.z):
+            elif S.z > C2.z:
                 dist_squared -= squared(S.z - C2.z)
             return dist_squared > 0
 
@@ -54,12 +54,17 @@ class Scene:
         max_dimension = 20
 
         # Create initial box
+        # bounding_box = AABB(
+        #     lower_left_corner=Q_Vector3d(
+        #         -max_dimension - 2 * Scene.OFFSET, -max_dimension - 2 * Scene.OFFSET, -max_dimension - 2 * Scene.OFFSET
+        #     ),
+        #     length=max_dimension * 2.0 + Scene.OFFSET,
+        #     name="biggie",
+        # )
         bounding_box = AABB(
-            lower_left_corner=Q_Vector3d(
-                -max_dimension - 2 * Scene.OFFSET, -max_dimension - 2 * Scene.OFFSET, -max_dimension - 2 * Scene.OFFSET
-            ),
-            length=max_dimension * 2.0 + Scene.OFFSET,
-            name="biggie",
+            lower_left_corner=Q_Vector3d(-20.00001, 0.1, -20.00001),
+            length=40,
+            name="biggie top",
         )
         # print(
         #     f"Created bounding box {bounding_box.name} at {bounding_box.min_coordinate} -> {bounding_box.max_coordinate} size {bounding_box.length}"
@@ -70,18 +75,30 @@ class Scene:
         boxes_to_add = list()
         current_level = initial_boxes
         for box in current_level:
-            for bounding_box in box.split():
+            for bounding_box in box.split(split_level=3):
                 boxes_to_add.append(bounding_box)
-        current_level = [b for b in boxes_to_add]
-        boxes_to_add.clear()
-        for box in current_level:
-            for bounding_box in box.split():
-                boxes_to_add.append(bounding_box)
+        # current_level = [b for b in boxes_to_add]
+        # boxes_to_add.clear()
+        # for box in current_level:
+        #     for bounding_box in box.split(split_level=2):
+        #         boxes_to_add.append(bounding_box)
+
+        boxes_to_add.append(
+            AABB(
+                lower_left_corner=Q_Vector3d(-20.00001, -40.0000001, -20.00001),
+                length=40,
+                name="biggie bottom",
+            )
+        )
+
         for box in boxes_to_add:
             self.bounding_boxes.append(box)
 
         print("Allocating objects to bounding boxes... ")
+        number_of_objects = len(self.objects)
+        current_object = 1
         for obj in self.objects:
+            print(f"\r{current_object}/{number_of_objects}", end="")
             assigned = False
             for bounding_box in self.bounding_boxes:
                 # print(
@@ -100,8 +117,11 @@ class Scene:
                     # print('Object center is inside the box')
                 elif (
                     # Check if any of the corners are inside the object
-                    sum(1 if (corner - obj.position).length <= obj.radius else 0 for corner in bounding_box.get_corners()) > 0
-
+                    sum(
+                        1 if (corner - obj.position).length <= obj.radius else 0
+                        for corner in bounding_box.get_corners()
+                    )
+                    > 0
                 ):
                     add = True
                     # print('Box has a corner inside the object')
@@ -123,7 +143,9 @@ class Scene:
                         #     break
 
                 if not add:
-                    if doesCubeIntersectSphere(bounding_box.min_coordinate, bounding_box.max_coordinate, obj.position, obj.radius):
+                    if doesCubeIntersectSphere(
+                        bounding_box.min_coordinate, bounding_box.max_coordinate, obj.position, obj.radius
+                    ):
                         # print('Sphere intersects BB')
                         add = True
 
@@ -134,7 +156,9 @@ class Scene:
                     #     f"Assigning {obj.position} to bb {bounding_box.name} -- {bounding_box.min_coordinate} {bounding_box.max_coordinate}"
                     # )
             if not assigned:
-                raise "Object not assigned to any bounding box"
+                raise Exception("Object not assigned to any bounding box")
+            current_object += 1
+
         print("Done.")
         print()
         print("Summary")
@@ -145,7 +169,7 @@ class Scene:
             else:
                 print(f"{bounding_box.name} has {len(bounding_box.items)} items.")
         for box in boxes_to_remove:
-            print(f"{bounding_box.name} has {len(bounding_box.items)} items and will be removed.")
+            print(f"{box.name} has {len(box.items)} items and will be removed.")
             self.bounding_boxes.remove(box)
         print(f"{len(self.bounding_boxes)} boxes in this scene.")
 

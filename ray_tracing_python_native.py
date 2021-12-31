@@ -56,7 +56,7 @@ if __name__ == "__main__":
             fail = True
             while fail:
                 fail = False
-                center = Q_Vector3d(a + 0.9 * random.random(), 0.2, b + 0.9 * random.random()+4)
+                center = Q_Vector3d(a + 0.9 * random.random(), 0.2, b + 0.9 * random.random() + 4)
                 for sphere in objects:
                     if (sphere.position - center).length < 0.41 or (center - Q_Vector3d(4, 0.2, 0)).length <= 0.9:
                         fail = True
@@ -78,10 +78,10 @@ if __name__ == "__main__":
                     # Glass
                     objects.append(SpherePrimitive(position=center, material=Glass(refraction_index=1.5), radius=0.2))
 
-    objects.append(SpherePrimitive(position=Q_Vector3d(0, -1000.0001, 0+4), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)), radius=1000))
-    objects.append(SpherePrimitive(position=Q_Vector3d(0, 1, 0+4), material=Glass(refraction_index=1.5), radius=1.0))
-    objects.append(SpherePrimitive(position=Q_Vector3d(-4, 1, 0+4), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0))
-    objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 0+4), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0), radius=1.0))
+    objects.append(SpherePrimitive(position=Q_Vector3d(0, -1000.0001, 0 + 4), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)), radius=1000))
+    objects.append(SpherePrimitive(position=Q_Vector3d(0, 1, 0 + 4), material=Glass(refraction_index=1.5), radius=1.0))
+    objects.append(SpherePrimitive(position=Q_Vector3d(-4, 1, 0 + 4), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0))
+    objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 0 + 4), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0), radius=1.0))
 
     print(f'{len(objects)} added to scene...')
     print('*' * 40)
@@ -90,8 +90,8 @@ if __name__ == "__main__":
         for o in objects:
             f_out.write(repr(o) + '\n')
 
-    cam = Camera(lookfrom=Q_Vector3d(13, 2, -3+4), lookat=Q_Vector3d(0, 0, 0+4), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
-    scene = Scene(camera_position=CAMERA, objects=objects)
+    cam = Camera(lookfrom=Q_Vector3d(13, 2, -3 + 4), lookat=Q_Vector3d(0, 0, 0 + 4), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
+    scene = Scene(objects=objects)
     scene.generate_bounding_boxes()
 
     scene.multi_render(
