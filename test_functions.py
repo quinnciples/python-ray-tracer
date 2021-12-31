@@ -12,6 +12,7 @@ from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
 from AABB import AABB
 
+
 def test_Q_Vector3d_constructor():
     vector = Q_Vector3d(0, 1, 2)
     assert vector.x == 0
@@ -152,9 +153,9 @@ def test_OrthoNormalBasis_random_vectors():
     THRESHOLD = 0.02
 
     def random_in_unit_sphere() -> Q_Vector3d:
-        p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
+        p = (Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1)
         while p.length_squared >= 1.0:
-            p = ((Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1))
+            p = (Q_Vector3d(random.random(), random.random(), random.random()) * 2.0) - Q_Vector3d(1, 1, 1)
         return p
 
     source_direction = Q_Vector3d(0, 1, 0).normalized()
@@ -173,7 +174,9 @@ def test_OrthoNormalBasis_random_vectors():
     source_direction = Q_Vector3d(0, 1, 0).normalized()
     for u_ in range(333):
         for v_ in range(333):
-            ortho_random_vectors.append(OrthoNormalBasis.cone_sample(direction=source_direction, cone_theta=CONE_THETA, u=u_ / 333, v=v_ / 333))
+            ortho_random_vectors.append(
+                OrthoNormalBasis.cone_sample(direction=source_direction, cone_theta=CONE_THETA, u=u_ / 333, v=v_ / 333)
+            )
     o_min_x = min(x.x for x in ortho_random_vectors)
     o_max_x = max(x.x for x in ortho_random_vectors)
     # o_min_y = min(x.y for x in ortho_random_vectors)
@@ -526,6 +529,23 @@ def test_AABB_intersection_with_ray_originating_from_outside_AABB():
     ray = Ray(origin=Q_Vector3d(20, 500, 0), direction=Q_Vector3d(-1, 0, 0).normalized())
     result = bounding_box.intersect(ray=ray)
     assert result is False
+
+
+def test_AABB_generate_corners_makes_all_eight_vectors_correctly():
+    test_box = AABB(Q_Vector3d(-0.5, -0.5, -0.5), length=1)
+    corner_coordinates = (
+        Q_Vector3d(x=-0.5, y=-0.5, z=-0.5),
+        Q_Vector3d(x=0.5, y=-0.5, z=-0.5),
+        Q_Vector3d(x=-0.5, y=0.5, z=-0.5),
+        Q_Vector3d(x=0.5, y=0.5, z=-0.5),
+        Q_Vector3d(x=-0.5, y=-0.5, z=0.5),
+        Q_Vector3d(x=0.5, y=-0.5, z=0.5),
+        Q_Vector3d(x=-0.5, y=0.5, z=0.5),
+        Q_Vector3d(x=0.5, y=0.5, z=0.5),
+    )
+    generated_corners = test_box.get_corners()
+    for corner in corner_coordinates:
+        assert corner in generated_corners
 
 
 if __name__ == "__main__":
