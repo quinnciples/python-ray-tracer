@@ -4,20 +4,22 @@ from Hit import Hit
 from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
+from Material import Material
 
 
 class TrianglePrimitive(Primitive):
 
     EPSILON = 0.000000001
 
-    def __init__(self, vertices: tuple, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float, emission: Q_Vector3d = Q_Vector3d(0, 0, 0)):
-        Primitive.__init__(self, position=Q_Vector3d(0, 0, 0), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
+    def __init__(self, vertices: tuple, material: Material):
         self.vertices = vertices
+        Primitive.__init__(self, position=self._position, material=material)
         self.position = self._position
+        self.radius = max((self.vertices[0] - self._position).length, (self.vertices[1] - self._position).length, (self.vertices[2] - self._position).length)
 
     @staticmethod
-    def from_vertices(vertex_1: Q_Vector3d, vertex_2: Q_Vector3d, vertex_3: Q_Vector3d, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float):
-        return TrianglePrimitive(vertices=(vertex_1, vertex_2, vertex_3), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection)
+    def from_vertices(vertex_1: Q_Vector3d, vertex_2: Q_Vector3d, vertex_3: Q_Vector3d, material: Material):
+        return TrianglePrimitive(vertices=(vertex_1, vertex_2, vertex_3), material=material)
 
     def vertex(self, index: int):
         return self.vertices[index]
@@ -38,6 +40,9 @@ class TrianglePrimitive(Primitive):
     def _position(self) -> Q_Vector3d:
         return (self.vertices[0] + self.vertices[1] + self.vertices[2]) * (1 / 3)
         # return self.face_normal
+
+    def __repr__(self):
+        return f'TrianglePrimitive(vertices={repr(self.vertices)}, material={repr(self.material)})'
 
     def intersect(self, ray: Ray) -> Hit:
         # E1 = self.u_vector
