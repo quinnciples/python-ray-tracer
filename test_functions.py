@@ -372,11 +372,10 @@ def test_Scene_nearest_intersection_with_one_object():
     # Test intersection does occur
     ray = Ray(origin=Q_Vector3d(0, 0, 0), direction=Q_Vector3d(0, 0, 1))
     nearest_object, hit = s.nearest_intersection(ray=ray)
-    print(nearest_object, hit)
     assert nearest_object is not None and hit is not None and hit.distance == 40
 
 
-def test_Scene_nearest_intersection_with_two_object():
+def test_Scene_nearest_intersection_with_two_objects():
     s2 = Scene(
         objects=[
             SpherePrimitive(
@@ -503,13 +502,50 @@ def test_AABB_generate_corners_makes_all_eight_vectors_correctly():
         assert corner in generated_corners
 
 
+def test_AABB_intersection_with_sphere():
+    # Sphere is outside the box, and far enough away that no intersection occurs
+    sphere = SpherePrimitive(position=Q_Vector3d(10.1, 0, 0), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=10.0)
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=10.0)
+    intersects = sphere.intersects_with_bounding_box(box=box)
+    assert intersects is False
+    # Sphere center is inside the box
+    sphere = SpherePrimitive(position=Q_Vector3d(1, 1, 1), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=10.0)
+    box = AABB(lower_left_corner=Q_Vector3d(-3, -3, -3), length=10.0)
+    intersects = sphere.intersects_with_bounding_box(box=box)
+    assert intersects is True
+    # Sphere center is outside the box, but the volume of the sphere intersects the box
+    sphere = SpherePrimitive(position=Q_Vector3d(9.99, 0, 0), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=10.0)
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=10.0)
+    intersects = sphere.intersects_with_bounding_box(box=box)
+    assert intersects is True
+
+
+def test_AABB_intersection_with_triangle():
+    # Triangle is outside the box, and far enough away that no intersection occurs
+    triangle = TrianglePrimitive(vertices=(Q_Vector3d(0, 0, 0), Q_Vector3d(1, 1, 0), Q_Vector3d(2, 0, 0)), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)))
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=9.0)
+    intersects = triangle.intersects_with_bounding_box(box=box)
+    assert intersects is False
+    # At least one Triangle vertex is inside the box
+    triangle = TrianglePrimitive(vertices=(Q_Vector3d(0, 0, 0), Q_Vector3d(1, 1, 0), Q_Vector3d(2, 0, 0)), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)))
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=10.1)
+    intersects = triangle.intersects_with_bounding_box(box=box)
+    assert intersects is True
+    # Only the face of the triangle clips the box, and all vertices are outside the box
+    triangle = TrianglePrimitive(vertices=(Q_Vector3d(11, 5, -2), Q_Vector3d(5, 12, 0), Q_Vector3d(11, 5, 2)), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)))
+    box = AABB(lower_left_corner=Q_Vector3d(0, 0, 0), length=10)
+    intersects = triangle.intersects_with_bounding_box(box=box)
+    assert intersects is True
+
+
+
 if __name__ == "__main__":
     list_of_tests = [x for x in dir() if "test_" in x]
     total_tests = 0
     failed_tests = 0
     for test in list_of_tests:
         # try:
-        print(test, "...", end="")
+        print(test, "...", end="", flush=True)
         total_tests += 1
         globals()[test]()
         print(" PASSED")

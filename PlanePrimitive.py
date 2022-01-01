@@ -35,7 +35,7 @@ class PlanePrimitive(Primitive):
         # Call interct for all triangles in all faces
         # Track objects and distances that have collissions
         # Determine closest triangle
-        # Return this distance and that normal's triangle
+        # Return this distance and that triangle's normal
         # In theory, this should only have one intersection, but it's
         # possible the vector could be along the plane...
         min_distance = math.inf

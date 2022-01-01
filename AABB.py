@@ -1,6 +1,6 @@
 # From https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c
 
-from Primitive import Primitive
+# from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
 import math
@@ -27,7 +27,7 @@ class AABB:
         self.items = list()
         self.name = name
 
-    def add_item(self, item: Primitive) -> None:
+    def add_item(self, item) -> None:
         self.items.append(item)
 
     def get_corners(self) -> list:

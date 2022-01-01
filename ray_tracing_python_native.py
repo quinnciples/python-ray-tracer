@@ -48,56 +48,11 @@ if __name__ == "__main__":
     )
     CORES_TO_USE = arguments.cores
 
-    objects = list()
-    # for a in range(-11, 11):
-    #     for b in range(-11, 11):
-    #         choose_mat = random.random()
-    #         # Check for collissions
-    #         fail = True
-    #         while fail:
-    #             fail = False
-    #             center = Q_Vector3d(a + 0.9 * random.random(), 0.2, b + 0.9 * random.random() + 4)
-    #             for sphere in objects:
-    #                 if (sphere.position - center).length < 0.41 or (center - Q_Vector3d(4, 0.2, 0 + 4)).length <= 0.9:
-    #                     fail = True
-    #                     break
-
-    #         if (center - Q_Vector3d(4, 0.2, 0 + 4)).length > 0.9:
-    #             if choose_mat < 0.65:
-    #                 # Diffuse material
-    #                 # Random color
-    #                 color_value = Q_Vector3d(random.random(), random.random(), random.random())
-    #                 objects.append(SpherePrimitive(position=center, material=Diffuse(attenuation=color_value), radius=0.2))
-    #             elif choose_mat < 0.90:
-    #                 # Metal
-    #                 color_value = Q_Vector3d(random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5)
-    #                 fuzz = random.random() / 2.0
-    #                 fuzz = 0 if fuzz < 0.15 else fuzz
-    #                 objects.append(SpherePrimitive(position=center, material=Metal(attenuation=color_value, fuzziness=float(fuzz)), radius=0.2))
-    #             else:
-    #                 # Glass
-    #                 objects.append(SpherePrimitive(position=center, material=Glass(refraction_index=1.5), radius=0.2))
-
-    objects.append(SpherePrimitive(position=Q_Vector3d(0, -1000.0001, 0 + 4), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)), radius=1000))
-    objects.append(SpherePrimitive(position=Q_Vector3d(0, 1, 0 + 4), material=Glass(refraction_index=1.5), radius=1.0))
-    objects.append(SpherePrimitive(position=Q_Vector3d(-4, 1, 0 + 4), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0))
-    objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 0 + 4), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0), radius=1.0))
-
-    # objects.append(TrianglePrimitive(vertices=(Q_Vector3d(-4, 1, 3), Q_Vector3d(0, 3, 3), Q_Vector3d(4, 1, 3)), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.7))))
-    objects.append(TrianglePrimitive(vertices=(Q_Vector3d(8, 0.1, 7), Q_Vector3d(0, 6, 6), Q_Vector3d(-8, 0.1, 7)), material=Metal(attenuation=Q_Vector3d(0.7, 0.7, 0.7), fuzziness=0.0)))
-
-    print(f'{len(objects)} added to scene...')
-    print('*' * 40)
-    print()
-    with open('render_settings.txt', 'w') as f_out:
-        for o in objects:
-            f_out.write(repr(o) + '\n')
-
-    # cam = Camera(lookfrom=Q_Vector3d(13, 2, -3 + 4), lookat=Q_Vector3d(0, 0, 0 + 4), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
-    cam = Camera(lookfrom=Q_Vector3d(0, 2, -12), lookat=Q_Vector3d(0, 1, 4), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=0)
-    scene = Scene(objects=objects)
+    scene = Scene(objects=list())
+    scene.setup_rtiaw_test_scene()
     scene.generate_bounding_boxes()
-
+    # cam = Camera(lookfrom=Q_Vector3d(13, 2, 1), lookat=Q_Vector3d(0, 0, 4), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
+    cam = Camera(lookfrom=Q_Vector3d(12.5, 2, -0.5), lookat=Q_Vector3d(0, 0, 4), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
     scene.multi_render(
         camera=cam,
         width=WIDTH,

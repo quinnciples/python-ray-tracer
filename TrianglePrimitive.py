@@ -1,5 +1,6 @@
 import math
 
+from AABB import AABB
 from Hit import Hit
 from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
@@ -43,6 +44,21 @@ class TrianglePrimitive(Primitive):
 
     def __repr__(self):
         return f'TrianglePrimitive(vertices={repr(self.vertices)}, material={repr(self.material)})'
+
+    def intersects_with_bounding_box(self, box: AABB) -> bool:
+        # Check if any of the triangles vertices are inside the box
+        for vertex in self.vertices:
+            if (box.min_coordinate.x <= vertex.x <= box.max_coordinate.x) and (box.min_coordinate.y <= vertex.y <= box.max_coordinate.y) and (box.min_coordinate.z <= vertex.z <= box.max_coordinate.z):
+                return True
+        # Check if a ray fired from any corner of the box to any other corner intersects the triangle
+        for starting_corner in box.get_corners():
+            for target_corner in box.get_corners():
+                if starting_corner == target_corner:
+                    continue
+                intersection = self.intersect(ray=Ray(origin=starting_corner, direction=(target_corner - starting_corner).normalized()))
+                if intersection is not None and intersection.distance < (target_corner - starting_corner).length:
+                    return True
+        return False
 
     def intersect(self, ray: Ray) -> Hit:
         # E1 = self.u_vector

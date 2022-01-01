@@ -7,12 +7,14 @@ from multiprocessing import Pool, cpu_count
 import matplotlib.pyplot as plt
 import numpy as np
 
+from AABB import AABB
 from Camera import Camera
 from Hit import Hit
+from Material import Diffuse, Glass, Material, Metal
 from Primitive import Primitive
 from QFunctions.Q_Functions import Q_buckets, Q_Vector3d
 from Ray import Ray
-from AABB import AABB
+from SpherePrimitive import SpherePrimitive
 
 
 class Scene:
@@ -23,44 +25,14 @@ class Scene:
         self.bounding_boxes = []
 
     def generate_bounding_boxes(self):
-        def doesCubeIntersectSphere(C1: Q_Vector3d, C2: Q_Vector3d, S: Q_Vector3d, R: float) -> bool:
-            def squared(v):
-                return v * v
-
-            dist_squared = R * R
-            # /* assume C1 and C2 are element-wise sorted, if not, do that now */
-            if S.x < C1.x:
-                dist_squared -= squared(S.x - C1.x)
-            elif S.x > C2.x:
-                dist_squared -= squared(S.x - C2.x)
-            if S.y < C1.y:
-                dist_squared -= squared(S.y - C1.y)
-            elif S.y > C2.y:
-                dist_squared -= squared(S.y - C2.y)
-            if S.z < C1.z:
-                dist_squared -= squared(S.z - C1.z)
-            elif S.z > C2.z:
-                dist_squared -= squared(S.z - C2.z)
-            return dist_squared > 0
 
         print("Creating bounding boxes... ")
-        # min_x = min(obj.position.x for obj in self.objects)
         max_x = max(math.fabs(obj.position.x) for obj in self.objects)
-        # min_y = min(obj.position.y for obj in self.objects)
         max_y = max(math.fabs(obj.position.y) for obj in self.objects)
-        # min_z = min(obj.position.z for obj in self.objects)
         max_z = max(math.fabs(obj.position.z) for obj in self.objects)
         max_dimension = max(max_x, max_y, max_z) + Scene.OFFSET
-        max_dimension = 20
 
         # Create initial box
-        # bounding_box = AABB(
-        #     lower_left_corner=Q_Vector3d(
-        #         -max_dimension - 2 * Scene.OFFSET, -max_dimension - 2 * Scene.OFFSET, -max_dimension - 2 * Scene.OFFSET
-        #     ),
-        #     length=max_dimension * 2.0 + Scene.OFFSET,
-        #     name="biggie",
-        # )
         bounding_box = AABB(
             lower_left_corner=Q_Vector3d(-20.00001, 0.1, -20.00001),
             length=40,
@@ -77,11 +49,6 @@ class Scene:
         for box in current_level:
             for bounding_box in box.split(split_level=3):
                 boxes_to_add.append(bounding_box)
-        # current_level = [b for b in boxes_to_add]
-        # boxes_to_add.clear()
-        # for box in current_level:
-        #     for bounding_box in box.split(split_level=2):
-        #         boxes_to_add.append(bounding_box)
 
         boxes_to_add.append(
             AABB(
@@ -101,52 +68,49 @@ class Scene:
             print(f"\r{current_object}/{number_of_objects}", end="")
             assigned = False
             for bounding_box in self.bounding_boxes:
-                # print(
-                #     f"Tring to assign {obj.position} with radius {obj.radius} to {bounding_box.name} {bounding_box.min_coordinate} {bounding_box.max_coordinate}..."
-                # )
-                # TODO
-                # Need to check if sphere radius crosses boundary
+                # # print(
+                # #     f"Tring to assign {obj.position} with radius {obj.radius} to {bounding_box.name} {bounding_box.min_coordinate} {bounding_box.max_coordinate}..."
+                # # )
+                # # TODO
+                # # Need to check if sphere radius crosses boundary
                 add = False
-                if (
-                    # Check if object is inside the box
-                    (bounding_box.min_coordinate.x <= obj.position.x <= bounding_box.max_coordinate.x)
-                    and (bounding_box.min_coordinate.y <= obj.position.y <= bounding_box.max_coordinate.y)
-                    and (bounding_box.min_coordinate.z <= obj.position.z <= bounding_box.max_coordinate.z)
-                ):
-                    add = True
-                    # print('Object center is inside the box')
-                elif (
-                    # Check if any of the corners are inside the object
-                    sum(
-                        1 if (corner - obj.position).length <= obj.radius else 0
-                        for corner in bounding_box.get_corners()
-                    )
-                    > 0
-                ):
-                    add = True
-                    # print('Box has a corner inside the object')
+                # if (
+                #     # Check if object is inside the box
+                #     (bounding_box.min_coordinate.x <= obj.position.x <= bounding_box.max_coordinate.x)
+                #     and (bounding_box.min_coordinate.y <= obj.position.y <= bounding_box.max_coordinate.y)
+                #     and (bounding_box.min_coordinate.z <= obj.position.z <= bounding_box.max_coordinate.z)
+                # ):
+                #     add = True
+                #     # print('Object center is inside the box')
+                # elif (
+                #     # Check if any of the corners are inside the object
+                #     sum(
+                #         1 if (corner - obj.position).length <= obj.radius else 0
+                #         for corner in bounding_box.get_corners()
+                #     )
+                #     > 0
+                # ):
+                #     add = True
+                #     # print('Box has a corner inside the object')
+
+                # if not add:
+                #     # Check if a ray fired along any axis of the AABB intersects the object
+                #     corners = bounding_box.get_corners()
+                #     for starting_corner in corners:
+                #         for ending_corner in corners:
+                #             if starting_corner == ending_corner:
+                #                 continue
+                #             ray = Ray(origin=starting_corner, direction=(ending_corner - starting_corner).normalized())
+                #             hit = obj.intersect(ray=ray)
+                #             if hit and hit.distance <= (ending_corner - starting_corner).length:
+                #                 add = True
+                #                 # print('Box intersects object')
+                #         #         break
+                #         # if add:
+                #         #     break
 
                 if not add:
-                    # Check if a ray fired along any axis of the AABB intersects the object
-                    corners = bounding_box.get_corners()
-                    for starting_corner in corners:
-                        for ending_corner in corners:
-                            if starting_corner == ending_corner:
-                                continue
-                            ray = Ray(origin=starting_corner, direction=(ending_corner - starting_corner).normalized())
-                            hit = obj.intersect(ray=ray)
-                            if hit and hit.distance <= (ending_corner - starting_corner).length:
-                                add = True
-                                # print('Box intersects object')
-                        #         break
-                        # if add:
-                        #     break
-
-                if not add:
-                    if doesCubeIntersectSphere(
-                        bounding_box.min_coordinate, bounding_box.max_coordinate, obj.position, obj.radius
-                    ):
-                        # print('Sphere intersects BB')
+                    if obj.intersects_with_bounding_box(box=bounding_box):
                         add = True
 
                 if add:
@@ -169,7 +133,7 @@ class Scene:
             else:
                 print(f"{bounding_box.name} has {len(bounding_box.items)} items.")
         for box in boxes_to_remove:
-            print(f"{box.name} has {len(box.items)} items and will be removed.")
+            # print(f"{box.name} has {len(box.items)} items and will be removed.")
             self.bounding_boxes.remove(box)
         print(f"{len(self.bounding_boxes)} boxes in this scene.")
 
@@ -335,3 +299,49 @@ class Scene:
             else:
                 # next_ray = Ray(next_ray.origin + next_ray.direction.normalized() * 1e-5, next_ray.direction)
                 return color_value * self.trace_ray(ray=next_ray, max_depth=max_depth, current_depth=current_depth + 1)
+
+    def setup_rtiaw_test_scene(self):
+        self.objects.clear()
+        random.seed(41365)
+        for a in range(-11, 11):
+            for b in range(-11, 11):
+                # print("\r                 ", end="", flush=True)
+                # print(f"\r{a} - {b}", end="", flush=True)
+                # Check for collissions
+                fail = True
+                while fail:
+                    fail = False
+                    center = Q_Vector3d((a / 1.0) + 1.0 * random.random(), 0.2, (b / 1.0) + 1.0 * random.random() + 4)
+                    for sphere in self.objects:
+                        if (sphere.position - center).length < 0.22 or (center - Q_Vector3d(4, 0.2, 4)).length <= 1.1 or (center - Q_Vector3d(0, 0.2, 4)).length <= 1.1 or (center - Q_Vector3d(-4, 0.2, 4)).length <= 1.1:
+                            fail = True
+                            break
+
+                # Create random material
+                choose_mat = random.random()
+                if choose_mat < 0.65:
+                    # Diffuse material
+                    # Random color
+                    color_value = Q_Vector3d(random.random(), random.random(), random.random())
+                    self.objects.append(SpherePrimitive(position=center, material=Diffuse(attenuation=color_value), radius=0.2))
+                elif choose_mat < 0.90:
+                    # Metal
+                    color_value = Q_Vector3d(random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5)
+                    fuzz = random.random() / 2.0
+                    fuzz = 0 if fuzz < 0.15 else fuzz
+                    self.objects.append(SpherePrimitive(position=center, material=Metal(attenuation=color_value, fuzziness=float(fuzz)), radius=0.2))
+                else:
+                    # Glass
+                    self.objects.append(SpherePrimitive(position=center, material=Glass(refraction_index=1.5), radius=0.2))
+
+        self.objects.append(SpherePrimitive(position=Q_Vector3d(0, -1000.0001, 4), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)), radius=1000))
+        self.objects.append(SpherePrimitive(position=Q_Vector3d(0, 1, 4), material=Glass(refraction_index=1.5), radius=1.0))
+        self.objects.append(SpherePrimitive(position=Q_Vector3d(-4, 1, 4), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0))
+        self.objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 4), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0), radius=1.0))
+
+        print(f'\n{len(self.objects)} added to scene...')
+        print('*' * 40)
+        print()
+        with open('render_settings.txt', 'w') as f_out:
+            for o in self.objects:
+                f_out.write(repr(o) + '\n')
