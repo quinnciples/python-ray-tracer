@@ -183,19 +183,30 @@ class Scene:
         nearest_hit = None
         checked_objects = set()
 
-        for bounding_box in self.bounding_boxes:
-            if bounding_box.intersect(ray=ray):  # intersect
-                for this_object in bounding_box.items:  # self.objects:
-                    # if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
-                    #     continue
-                    if this_object not in checked_objects:
-                        checked_objects.add(this_object)
-                        hit = this_object.intersect(ray=ray)
-                        if hit and hit.distance < min_distance:
-                            obj = this_object
-                            nearest_hit = hit
-                            min_distance = hit.distance
-        return obj, nearest_hit
+        if self.bounding_boxes:
+            for bounding_box in self.bounding_boxes:
+                if bounding_box.intersect(ray=ray):  # intersect
+                    for this_object in bounding_box.items:  # self.objects:
+                        # if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
+                        #     continue
+                        if this_object not in checked_objects:
+                            checked_objects.add(this_object)
+                            hit = this_object.intersect(ray=ray)
+                            if hit and hit.distance < min_distance:
+                                obj = this_object
+                                nearest_hit = hit
+                                min_distance = hit.distance
+            return obj, nearest_hit
+        else:
+            for this_object in self.objects:  # self.objects:
+                # if (this_object.position - ray.origin).dot_product(ray.direction) < 0:
+                #     continue
+                hit = this_object.intersect(ray=ray)
+                if hit and hit.distance < min_distance:
+                    obj = this_object
+                    nearest_hit = hit
+                    min_distance = hit.distance
+            return obj, nearest_hit
 
     @staticmethod
     def write_ppm_file(image_data) -> None:
