@@ -35,6 +35,7 @@ class Scene:
         # Create initial box
         bounding_box = AABB(
             lower_left_corner=Q_Vector3d(-20.00001, 0.1, -20.00001),
+            # lower_left_corner=Q_Vector3d(-20.00001, -20.00001, -20.00001),
             length=40,
             name="biggie top",
         )

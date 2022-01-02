@@ -5,6 +5,7 @@ from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
 import math
 
+
 class AABB:
     BOX_POSITIONS = {
         "left_bottom_rear": (0, 0, 0),

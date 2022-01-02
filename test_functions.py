@@ -7,6 +7,7 @@ from AABB import AABB
 from Hit import Hit
 from Material import Diffuse, Glass, Material, Metal
 from OrthoNormalBasis import OrthoNormalBasis
+from PlanePrimitive import PlanePrimitive
 from QFunctions.Q_Functions import Q_buckets, Q_Vector3d
 from Ray import Ray
 from Scene import Scene
@@ -416,7 +417,6 @@ def test_Scene_anti_aliasing_offsets_do_not_overlap():
     valid y coordinates should be between the midpoint of this pixel
     and its lower neighbor (1.5) and upper neighbor (2.5)
     """
-    width, height = 3, 3
     x_offset = 1
     y_offset = 1
     x, y = 2, 2
@@ -537,6 +537,23 @@ def test_AABB_intersection_with_triangle():
     intersects = triangle.intersects_with_bounding_box(box=box)
     assert intersects is True
 
+
+def test_AABB_intersection_with_plane():
+    # Plane is outside the box, and far enough away that no intersection occurs
+    plane = PlanePrimitive(front_bottom_left=Q_Vector3d(1, 1, 1), rear_top_right=Q_Vector3d(10, 10, 10), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0))
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=9.0)
+    intersects = plane.intersects_with_bounding_box(box=box)
+    assert intersects is False
+    # At least one Plane vertex is inside the box
+    plane = PlanePrimitive(front_bottom_left=Q_Vector3d(0.1, 0.1, 0.1), rear_top_right=Q_Vector3d(10, 10, 10), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0))
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=11.0)
+    intersects = plane.intersects_with_bounding_box(box=box)
+    assert intersects is True
+    # # Only the face of the triangle clips the box, and all vertices are outside the box
+    plane = PlanePrimitive(front_bottom_left=Q_Vector3d(11, 5, -2), rear_top_right=Q_Vector3d(8, 8, 1), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0))
+    box = AABB(lower_left_corner=Q_Vector3d(0, 0, 0), length=10)
+    intersects = plane.intersects_with_bounding_box(box=box)
+    assert intersects is True
 
 
 if __name__ == "__main__":

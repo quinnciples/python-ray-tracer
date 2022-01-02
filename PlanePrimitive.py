@@ -1,10 +1,12 @@
 import math
 
 from Hit import Hit
+from Material import Material
 from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
 from TrianglePrimitive import TrianglePrimitive
+from AABB import AABB
 
 
 class PlanePrimitive(Primitive):
@@ -16,8 +18,8 @@ class PlanePrimitive(Primitive):
     front_bottom_left
     (x1, y1, z1)
     """
-    def __init__(self, front_bottom_left: Q_Vector3d, rear_top_right: Q_Vector3d, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float, emission: Q_Vector3d = Q_Vector3d(0, 0, 0)):
-        Primitive.__init__(self, position=(rear_top_right + front_bottom_left) * (1 / 2), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
+    def __init__(self, front_bottom_left: Q_Vector3d, rear_top_right: Q_Vector3d, material: Material):
+        Primitive.__init__(self, position=(front_bottom_left + rear_top_right) * (1 / 2), material=material)
         front = Q_Vector3d(0, 0, front_bottom_left.z)
         bottom = Q_Vector3d(0, front_bottom_left.y, 0)
         left = Q_Vector3d(front_bottom_left.x, 0, 0)
@@ -26,9 +28,8 @@ class PlanePrimitive(Primitive):
         right = Q_Vector3d(rear_top_right.x, 0, 0)
 
         self.faces = (
-            # top face
-            TrianglePrimitive((front + bottom + left, rear + top + left, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
-            TrianglePrimitive((front + bottom + left, front + bottom + right, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((front + bottom + left, rear + top + left, rear_top_right), material=material),
+            TrianglePrimitive((front + bottom + left, front + bottom + right, rear_top_right), material=material)
         )
 
     def intersect(self, ray: Ray) -> Hit:
@@ -48,3 +49,6 @@ class PlanePrimitive(Primitive):
                 normal_to_surface = hit.normal_to_surface
         # return (min_distance, normal_to_surface)
         return Hit(position=ray.position_at_distance(min_distance), distance=min_distance, normal_to_surface=normal_to_surface, is_inside=False)
+
+    def intersects_with_bounding_box(self, box: AABB) -> bool:
+        return any(triangle.intersects_with_bounding_box(box=box) for triangle in self.faces)

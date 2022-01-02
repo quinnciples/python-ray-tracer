@@ -20,6 +20,7 @@ from QFunctions.Q_Functions import Q_Vector3d
 from Scene import Scene
 from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
+from PlanePrimitive import PlanePrimitive
 
 if __name__ == "__main__":
 
@@ -43,16 +44,15 @@ if __name__ == "__main__":
     HEIGHT = arguments.height
     CAMERA = Q_Vector3d(0, 0, -1)
     MAX_DEPTH = arguments.depth
-    NUMBER_OF_LIGHTING_SAMPLES = (
-        int(max(arguments.samples, 1))
-    )
+    NUMBER_OF_LIGHTING_SAMPLES = int(max(arguments.samples, 1))
     CORES_TO_USE = arguments.cores
 
-    scene = Scene(objects=list())
-    scene.setup_rtiaw_test_scene()
-    scene.generate_bounding_boxes()
     # cam = Camera(lookfrom=Q_Vector3d(13, 2, 1), lookat=Q_Vector3d(0, 0, 4), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
     cam = Camera(lookfrom=Q_Vector3d(12.5, 2, -0.5), lookat=Q_Vector3d(0, 0, 4), vup=Q_Vector3d(0, -1, 0), vfov=20, aspect_ratio=float(WIDTH) / float(HEIGHT), aperture=0.1, focus_dist=10.0)
+    objects = list()
+    scene = Scene(objects=objects)
+    scene.setup_rtiaw_test_scene()
+    scene.generate_bounding_boxes()
     scene.multi_render(
         camera=cam,
         width=WIDTH,
