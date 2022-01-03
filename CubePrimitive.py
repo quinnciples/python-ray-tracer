@@ -1,6 +1,8 @@
 import math
 
+from AABB import AABB
 from Hit import Hit
+from Material import Material
 from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
@@ -20,8 +22,8 @@ class CubePrimitive(Primitive):
     front_bottom_left
     (x1, y1, z1)
     """
-    def __init__(self, front_bottom_left: Q_Vector3d, rear_top_right: Q_Vector3d, ambient: Q_Vector3d, diffuse: Q_Vector3d, specular: Q_Vector3d, shininess: float, reflection: float, emission: Q_Vector3d = Q_Vector3d(0, 0, 0)):
-        Primitive.__init__(self, position=(rear_top_right + front_bottom_left) * (1 / 2), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
+    def __init__(self, front_bottom_left: Q_Vector3d, rear_top_right: Q_Vector3d, material: Material):
+        Primitive.__init__(self, position=(rear_top_right + front_bottom_left) * (1 / 2), material=material)
         front = Q_Vector3d(0, 0, front_bottom_left.z)
         bottom = Q_Vector3d(0, front_bottom_left.y, 0)
         left = Q_Vector3d(front_bottom_left.x, 0, 0)
@@ -31,28 +33,28 @@ class CubePrimitive(Primitive):
 
         self.faces = (
             # front face
-            TrianglePrimitive((front_bottom_left, front + top + left, front + top + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
-            TrianglePrimitive((front_bottom_left, front + bottom + right, front + top + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
-            # top face
+            TrianglePrimitive((front_bottom_left, front + top + left, front + top + right), material=material),
+            TrianglePrimitive((front_bottom_left, front + bottom + right, front + top + right), material=material),
 
-            TrianglePrimitive((front + top + left, rear + top + left, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
-            TrianglePrimitive((front + top + left, front + top + right, rear_top_right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            # top face
+            TrianglePrimitive((front + top + left, rear + top + left, rear_top_right), material=material),
+            TrianglePrimitive((front + top + left, front + top + right, rear_top_right), material=material),
 
             # bottom face
-            TrianglePrimitive((front_bottom_left, front + bottom + right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
-            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((front_bottom_left, front + bottom + right, rear + bottom + right), material=material),
+            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + bottom + right), material=material),
 
             # rear face
-            TrianglePrimitive((rear + top + left, rear_top_right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
-            TrianglePrimitive((rear + top + left, rear + bottom + left, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((rear + top + left, rear_top_right, rear + bottom + right), material=material),
+            TrianglePrimitive((rear + top + left, rear + bottom + left, rear + bottom + right), material=material),
 
             # left face
-            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + top + left), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
-            TrianglePrimitive((front_bottom_left, front + top + left, rear + top + left), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
+            TrianglePrimitive((front_bottom_left, rear + bottom + left, rear + top + left), material=material),
+            TrianglePrimitive((front_bottom_left, front + top + left, rear + top + left), material=material),
 
             # right face
-            TrianglePrimitive((front + top + right, rear_top_right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission),
-            TrianglePrimitive((front + top + right, front + bottom + right, rear + bottom + right), ambient=ambient, diffuse=diffuse, specular=specular, shininess=shininess, reflection=reflection, emission=emission)
+            TrianglePrimitive((front + top + right, rear_top_right, rear + bottom + right), material=material),
+            TrianglePrimitive((front + top + right, front + bottom + right, rear + bottom + right), material=material),
         )
 
     def intersect(self, ray: Ray) -> Hit:
@@ -73,3 +75,6 @@ class CubePrimitive(Primitive):
             if num_intersections > 1:
                 break
         return Hit(distance=min_distance, normal_to_surface=normal_to_surface, is_inside=False)  # Need to update is_inside check
+
+    def intersects_with_bounding_box(self, box: AABB) -> bool:
+        return any(triangle.intersects_with_bounding_box(box=box) for triangle in self.faces)

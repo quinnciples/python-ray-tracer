@@ -532,8 +532,8 @@ def test_AABB_intersection_with_triangle():
     intersects = triangle.intersects_with_bounding_box(box=box)
     assert intersects is True
     # Only the face of the triangle clips the box, and all vertices are outside the box
-    triangle = TrianglePrimitive(vertices=(Q_Vector3d(11, 5, -2), Q_Vector3d(5, 12, 0), Q_Vector3d(11, 5, 2)), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)))
-    box = AABB(lower_left_corner=Q_Vector3d(0, 0, 0), length=10)
+    triangle = TrianglePrimitive(vertices=(Q_Vector3d(-100, -100, 0), Q_Vector3d(0, 100, 0), Q_Vector3d(100, -100, 0)), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)))
+    box = AABB(lower_left_corner=Q_Vector3d(-5, -5, -5), length=10)
     intersects = triangle.intersects_with_bounding_box(box=box)
     assert intersects is True
 
