@@ -1,0 +1,115 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Preview",
+            //"command": "${config:python.pythonPath} ray_tracing_python_native.py --width 768 --height 432 --depth 50 --samples 1 --cores 0",
+            "command": "${config:python.pythonPath} ray_tracing_python_native.py --width 384 --height 216 --depth 50 --samples 1 --cores 0",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "Preview w/10 samples",
+            "command": "${config:python.pythonPath} ray_tracing_python_native.py --width 384 --height 216 --depth 50 --samples 10 --cores 0",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "Output Render",
+            "command": "${config:python.pythonPath} ray_tracing_python_native.py --width 768 --height 432 --depth 50 --samples 150 --cores 0",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "Full Resolution",
+            "command": "${config:python.pythonPath} ray_tracing_python_native.py --width 640 --height 480 --depth 50 --samples 1 --cores 0",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            },
+            "problemMatcher": []
+            
+        },
+        {
+            "label": "Full Resolution w/10 samples",
+            "command": "${config:python.pythonPath} ray_tracing_python_native.py --width 640 --height 480 --depth 50 --samples 10 --cores 0",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            },
+            "problemMatcher": []
+            
+        },
+        {
+            "label": "Full Resolution w/100 samples",
+            "command": "${config:python.pythonPath} ray_tracing_python_native.py --width 640 --height 480 --depth 50 --samples 100 --cores 0",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            },
+            "problemMatcher": []
+            
+        },
+        {
+            "label": "Run Tests",
+            "command": "${config:python.pythonPath} -m pytest --verbose",
+            "type": "shell",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "focus": true
+            }
+        }
+    ]
+}
