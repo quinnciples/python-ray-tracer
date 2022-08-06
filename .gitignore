@@ -6,3 +6,5 @@ time.txt
 *.ppm
 books
 render_settings.txt
+.coverage
+htmlcov

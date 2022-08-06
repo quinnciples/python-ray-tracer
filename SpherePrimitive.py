@@ -64,9 +64,9 @@ class SpherePrimitive(Primitive):
         #         return distance, normal_to_surface
 
         op = self.position - ray.origin
-        radiusSquared = self.radius ** 2
+        # radiusSquared = self.radius ** 2
         b = op.dot_product(ray.direction)
-        determinant = b * b - (op.length_squared) + radiusSquared
+        determinant = b * b - (op.length_squared) + self.radius_squared
         if (determinant < 0):
             # return None, None
             return None
