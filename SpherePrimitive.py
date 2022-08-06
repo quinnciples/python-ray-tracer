@@ -1,5 +1,6 @@
 import math
 
+from AABB import AABB
 from Hit import Hit
 from Material import Diffuse, Material, Metal
 from Primitive import Primitive
@@ -20,9 +21,26 @@ class SpherePrimitive(Primitive):
         # self.center = center
         Primitive.__init__(self, position=position, material=material)
         self.radius = float(radius)
+        self.radius_squared = self.radius ** 2
 
     def __repr__(self):
         return f'SpherePrimitive(position={repr(self.position)}, material={repr(self.material)})'
+
+    def intersects_with_bounding_box(self, box: AABB) -> bool:
+        dist_squared = self.radius_squared
+        if self.position.x < box.min_coordinate.x:
+            dist_squared -= (self.position.x - box.min_coordinate.x) ** 2
+        elif self.position.x > box.max_coordinate.x:
+            dist_squared -= (self.position.x - box.max_coordinate.x) ** 2
+        if self.position.y < box.min_coordinate.y:
+            dist_squared -= (self.position.y - box.min_coordinate.y) ** 2
+        elif self.position.y > box.max_coordinate.y:
+            dist_squared -= (self.position.y - box.max_coordinate.y) ** 2
+        if self.position.z < box.min_coordinate.z:
+            dist_squared -= (self.position.z - box.min_coordinate.z) ** 2
+        elif self.position.z > box.max_coordinate.z:
+            dist_squared -= (self.position.z - box.max_coordinate.z) ** 2
+        return dist_squared > 0
 
     def intersect(self, ray: Ray) -> Hit:
         b = 2 * ray.direction.dot_product(other_vector=(ray.origin - self.position))
@@ -46,9 +64,9 @@ class SpherePrimitive(Primitive):
         #         return distance, normal_to_surface
 
         op = self.position - ray.origin
-        radiusSquared = self.radius ** 2
+        # radiusSquared = self.radius ** 2
         b = op.dot_product(ray.direction)
-        determinant = b * b - (op.length_squared) + radiusSquared
+        determinant = b * b - (op.length_squared) + self.radius_squared
         if (determinant < 0):
             # return None, None
             return None

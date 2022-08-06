@@ -3,14 +3,16 @@ import random
 
 import numpy as np
 
+from AABB import AABB
 from Hit import Hit
+from Material import Diffuse, Glass, Material, Metal
 from OrthoNormalBasis import OrthoNormalBasis
+from PlanePrimitive import PlanePrimitive
 from QFunctions.Q_Functions import Q_buckets, Q_Vector3d
 from Ray import Ray
 from Scene import Scene
 from SpherePrimitive import SpherePrimitive
 from TrianglePrimitive import TrianglePrimitive
-from AABB import AABB
 
 
 def test_Q_Vector3d_constructor():
@@ -218,29 +220,52 @@ def test_Ray_constructor():
     assert r3.origin + r3.direction * 50 == Q_Vector3d(10, 10, 60)
 
 
+def test_Ray_from_origin_and_direction():
+    """
+    def from_origin_and_direction(origin: Q_Vector3d, direction: Q_Vector3d):
+        return Ray(origin=origin, direction=direction)
+    """
+    origin = Q_Vector3d(2.2, 3.6, -4.1)
+    direction = Q_Vector3d(-0.9, 0.2, 5.8)
+    test_ray = Ray.from_origin_and_direction(origin=origin, direction=direction)
+    assert test_ray.origin == origin
+    assert test_ray.direction == direction
+
+
+def test_Ray_str_method():
+    test_ray = Ray(origin=Q_Vector3d(2.0, -3.0, 0.6), direction=(0.1, -6.6, 2.5))
+    test_ray_str = str(test_ray)
+    expected_ray_str = "{Origin={2.0, -3.0, 0.6}, Direction=(0.1, -6.6, 2.5)}"
+    assert test_ray_str == expected_ray_str
+
+
 def test_SpherePrimitive_constructor():
     s = SpherePrimitive(
         position=Q_Vector3d(10, 20, 30),
-        ambient=Q_Vector3d(0, 0, 0),
-        diffuse=Q_Vector3d(0, 0, 0),
-        specular=Q_Vector3d(0, 0, 0),
-        shininess=0,
-        reflection=0,
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
         radius=15,
     )
     assert s.position == Q_Vector3d(10, 20, 30)
     assert s.radius == 15
 
 
+def test_SpherePrimitive_repr():
+    # return f'SpherePrimitive(position={repr(self.position)}, material={repr(self.material)})'
+    s = SpherePrimitive(
+        position=Q_Vector3d(10, 20, 30),
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
+        radius=15,
+    )
+    r = repr(s)
+    expected_repr_string = """SpherePrimitive(position=Q_Vector3d(x=10.0, y=20.0, z=30.0), material=Diffuse(attenuation=Q_Vector3d(x=0.4, y=0.2, z=0.1)))"""
+    assert r == expected_repr_string
+
+
 def test_SpherePrimitive_intersects():
     THRESHOLD = 0.00001
     s = SpherePrimitive(
         position=Q_Vector3d(10, 20, 30),
-        ambient=Q_Vector3d(0, 0, 0),
-        diffuse=Q_Vector3d(0, 0, 0),
-        specular=Q_Vector3d(0, 0, 0),
-        shininess=0,
-        reflection=0,
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
         radius=15,
     )
     hit = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0)))
@@ -259,11 +284,7 @@ def test_SpherePrimitive_intersection():
     THRESHOLD = 0.00001
     s = SpherePrimitive(
         position=Q_Vector3d(0, 0, 30),
-        ambient=Q_Vector3d(0, 0, 0),
-        diffuse=Q_Vector3d(0, 0, 0),
-        specular=Q_Vector3d(0, 0, 0),
-        shininess=0,
-        reflection=0,
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
         radius=10,
     )
     hit = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 0, 2)))
@@ -284,11 +305,7 @@ def test_SpherePrimitive_intersection_inside():
     THRESHOLD = 0.00001
     s = SpherePrimitive(
         position=Q_Vector3d(0, 0, 30),
-        ambient=Q_Vector3d(0, 0, 0),
-        diffuse=Q_Vector3d(0, 0, 0),
-        specular=Q_Vector3d(0, 0, 0),
-        shininess=0,
-        reflection=0,
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
         radius=10,
     )
     hit = s.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 30), Q_Vector3d(0, 0, 2)))
@@ -308,11 +325,7 @@ def test_SpherePrimitive_intersection_inside():
 def test_TrianglePrimitive_constructor():
     t = TrianglePrimitive(
         (Q_Vector3d(1, 2, 3), Q_Vector3d(2, 3, 4), Q_Vector3d(4, 5, 6)),
-        ambient=Q_Vector3d(0, 0, 0),
-        diffuse=Q_Vector3d(0, 0, 0),
-        specular=Q_Vector3d(0, 0, 0),
-        shininess=0,
-        reflection=0,
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
     )
     assert t.vertex(0) == Q_Vector3d(1, 2, 3)
     assert t.vertex(1) == Q_Vector3d(2, 3, 4)
@@ -323,11 +336,7 @@ def test_TrianglePrimitive_intersects_clockwise():
     THRESHOLD = 0.00001
     t = TrianglePrimitive(
         (Q_Vector3d(0, 0, 3), Q_Vector3d(0, 1, 3), Q_Vector3d(1, 1, 3)),
-        ambient=Q_Vector3d(0, 0, 0),
-        diffuse=Q_Vector3d(0, 0, 0),
-        specular=Q_Vector3d(0, 0, 0),
-        shininess=0,
-        reflection=0,
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
     )
     hit = t.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0)))
     assert hit is None
@@ -348,11 +357,7 @@ def test_TrianglePrimitive_intersects_counter_clockwise():
     THRESHOLD = 0.00001
     t = TrianglePrimitive(
         (Q_Vector3d(0, 0, 3), Q_Vector3d(1, 1, 3), Q_Vector3d(0, 1, 3)),
-        ambient=Q_Vector3d(0, 0, 0),
-        diffuse=Q_Vector3d(0, 0, 0),
-        specular=Q_Vector3d(0, 0, 0),
-        shininess=0,
-        reflection=0,
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
     )
     hit = t.intersect(ray=Ray.from_two_vectors(Q_Vector3d(0, 0, 0), Q_Vector3d(0, 1, 0)))
     assert hit is None
@@ -371,16 +376,9 @@ def test_TrianglePrimitive_intersects_counter_clockwise():
 
 def test_Scene_constructor():
     s = Scene(
-        camera_position=Q_Vector3d(0, 0, 0),
         objects=[
             SpherePrimitive(
-                position=Q_Vector3d(0, 0, 0),
-                radius=10,
-                ambient=Q_Vector3d(0, 0, 0),
-                diffuse=Q_Vector3d(0, 0, 0),
-                specular=Q_Vector3d(0, 0, 0),
-                shininess=0,
-                reflection=0,
+                position=Q_Vector3d(0, 0, 0), radius=10, material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1))
             )
         ],
     )
@@ -389,16 +387,9 @@ def test_Scene_constructor():
 
 def test_Scene_nearest_intersection_with_one_object():
     s = Scene(
-        camera_position=Q_Vector3d(0, 0, 0),
         objects=[
             SpherePrimitive(
-                position=Q_Vector3d(0, 0, 50),
-                radius=10,
-                ambient=Q_Vector3d(0, 0, 0),
-                diffuse=Q_Vector3d(0, 0, 0),
-                specular=Q_Vector3d(0, 0, 0),
-                shininess=0,
-                reflection=0,
+                position=Q_Vector3d(0, 0, 50), radius=10, material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1))
             )
         ],
     )
@@ -412,27 +403,14 @@ def test_Scene_nearest_intersection_with_one_object():
     assert nearest_object is not None and hit is not None and hit.distance == 40
 
 
-def test_Scene_nearest_intersection_with_two_object():
+def test_Scene_nearest_intersection_with_two_objects():
     s2 = Scene(
-        camera_position=Q_Vector3d(0, 0, 0),
         objects=[
             SpherePrimitive(
-                position=Q_Vector3d(0, 0, 50),
-                radius=10,
-                ambient=Q_Vector3d(0, 0, 0),
-                diffuse=Q_Vector3d(0, 0, 0),
-                specular=Q_Vector3d(0, 0, 0),
-                shininess=0,
-                reflection=0,
+                position=Q_Vector3d(0, 0, 50), radius=10, material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1))
             ),
             SpherePrimitive(
-                position=Q_Vector3d(0, 0, 100),
-                radius=10,
-                ambient=Q_Vector3d(0, 0, 0),
-                diffuse=Q_Vector3d(0, 0, 0),
-                specular=Q_Vector3d(0, 0, 0),
-                shininess=0,
-                reflection=0,
+                position=Q_Vector3d(0, 0, 100), radius=10, material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1))
             ),
         ],
     )
@@ -462,7 +440,6 @@ def test_Scene_anti_aliasing_offsets_do_not_overlap():
     valid y coordinates should be between the midpoint of this pixel
     and its lower neighbor (1.5) and upper neighbor (2.5)
     """
-    width, height = 3, 3
     x_offset = 1
     y_offset = 1
     x, y = 2, 2
@@ -548,22 +525,103 @@ def test_AABB_generate_corners_makes_all_eight_vectors_correctly():
         assert corner in generated_corners
 
 
-if __name__ == "__main__":
-    list_of_tests = [x for x in dir() if "test_AABB" in x]
-    total_tests = 0
-    failed_tests = 0
-    for test in list_of_tests:
-        try:
-            print(test, "...", end="")
-            total_tests += 1
-            globals()[test]()
-            print(" PASSED")
+def test_AABB_intersection_with_sphere():
+    # Sphere is outside the box, and far enough away that no intersection occurs
+    sphere = SpherePrimitive(
+        position=Q_Vector3d(10.1, 0, 0), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=10.0
+    )
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=10.0)
+    intersects = sphere.intersects_with_bounding_box(box=box)
+    assert intersects is False
+    # Sphere center is inside the box
+    sphere = SpherePrimitive(
+        position=Q_Vector3d(1, 1, 1), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=10.0
+    )
+    box = AABB(lower_left_corner=Q_Vector3d(-3, -3, -3), length=10.0)
+    intersects = sphere.intersects_with_bounding_box(box=box)
+    assert intersects is True
+    # Sphere center is outside the box, but the volume of the sphere intersects the box
+    sphere = SpherePrimitive(
+        position=Q_Vector3d(9.99, 0, 0), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=10.0
+    )
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=10.0)
+    intersects = sphere.intersects_with_bounding_box(box=box)
+    assert intersects is True
 
-        except Exception as e:
-            failed_tests += 1
-            print(" !! FAILED !!")
-            print(e)
 
-    print()
-    print(f"{total_tests} tests run, {total_tests - failed_tests} tests passed, {failed_tests} tests failed.")
-    print()
+def test_AABB_intersection_with_triangle():
+    # Triangle is outside the box, and far enough away that no intersection occurs
+    triangle = TrianglePrimitive(
+        vertices=(Q_Vector3d(0, 0, 0), Q_Vector3d(1, 1, 0), Q_Vector3d(2, 0, 0)),
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
+    )
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=9.0)
+    intersects = triangle.intersects_with_bounding_box(box=box)
+    assert intersects is False
+    # At least one Triangle vertex is inside the box
+    triangle = TrianglePrimitive(
+        vertices=(Q_Vector3d(0, 0, 0), Q_Vector3d(1, 1, 0), Q_Vector3d(2, 0, 0)),
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
+    )
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=10.1)
+    intersects = triangle.intersects_with_bounding_box(box=box)
+    assert intersects is True
+    # Only the face of the triangle clips the box, and all vertices are outside the box
+    triangle = TrianglePrimitive(
+        vertices=(Q_Vector3d(-100, -100, 0), Q_Vector3d(0, 100, 0), Q_Vector3d(100, -100, 0)),
+        material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)),
+    )
+    box = AABB(lower_left_corner=Q_Vector3d(-5, -5, -5), length=10)
+    intersects = triangle.intersects_with_bounding_box(box=box)
+    assert intersects is True
+
+
+def test_AABB_intersection_with_plane():
+    # Plane is outside the box, and far enough away that no intersection occurs
+    plane = PlanePrimitive(
+        front_bottom_left=Q_Vector3d(1, 1, 1),
+        rear_top_right=Q_Vector3d(10, 10, 10),
+        material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0),
+    )
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=9.0)
+    intersects = plane.intersects_with_bounding_box(box=box)
+    assert intersects is False
+    # At least one Plane vertex is inside the box
+    plane = PlanePrimitive(
+        front_bottom_left=Q_Vector3d(0.1, 0.1, 0.1),
+        rear_top_right=Q_Vector3d(10, 10, 10),
+        material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0),
+    )
+    box = AABB(lower_left_corner=Q_Vector3d(-10, -10, -10), length=11.0)
+    intersects = plane.intersects_with_bounding_box(box=box)
+    assert intersects is True
+    # # Only the face of the triangle clips the box, and all vertices are outside the box
+    plane = PlanePrimitive(
+        front_bottom_left=Q_Vector3d(11, 5, -2),
+        rear_top_right=Q_Vector3d(8, 8, 1),
+        material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0),
+    )
+    box = AABB(lower_left_corner=Q_Vector3d(0, 0, 0), length=10)
+    intersects = plane.intersects_with_bounding_box(box=box)
+    assert intersects is True
+
+
+# if __name__ == "__main__":
+#     list_of_tests = [x for x in dir() if "test_" in x]
+#     total_tests = 0
+#     failed_tests = 0
+#     for test in list_of_tests:
+#         # try:
+#         print(test, "...", end="", flush=True)
+#         total_tests += 1
+#         globals()[test]()
+#         print(" PASSED")
+
+#         # except Exception as e:
+#         #     failed_tests += 1
+#         #     print(" !! FAILED !!")
+#         #     print(e)
+
+#     print()
+#     print(f"{total_tests} tests run, {total_tests - failed_tests} tests passed, {failed_tests} tests failed.")
+#     print()

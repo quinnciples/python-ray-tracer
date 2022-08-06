@@ -1,9 +1,10 @@
 # From https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c
 
-from Primitive import Primitive
+# from Primitive import Primitive
 from QFunctions.Q_Functions import Q_Vector3d
 from Ray import Ray
 import math
+
 
 class AABB:
     BOX_POSITIONS = {
@@ -27,7 +28,7 @@ class AABB:
         self.items = list()
         self.name = name
 
-    def add_item(self, item: Primitive) -> None:
+    def add_item(self, item) -> None:
         self.items.append(item)
 
     def get_corners(self) -> list:
@@ -88,26 +89,25 @@ class AABB:
         # .n_inv = dmnsn_new_vector(1.0/ray.n.X, 1.0/ray.n.Y, 1.0/ray.n.Z)
 
         # ray.direction = ray.direction.normalized()
-        
-        tx1 = (self.min_coordinate.x - ray.origin.x) * (1.0 / ray.direction.x)
-        tx2 = (self.max_coordinate.x - ray.origin.x) * (1.0 / ray.direction.x)  # ray.n_inv.x
+        tx1 = (self.min_coordinate.x - ray.origin.x) * (math.inf if ray.direction.x == 0 else (1.0 / ray.direction.x))
+        tx2 = (self.max_coordinate.x - ray.origin.x) * (math.inf if ray.direction.x == 0 else (1.0 / ray.direction.x))  # ray.n_inv.x
 
         tmin = min(tx1, tx2)
         tmax = max(tx1, tx2)
 
-        ty1 = (self.min_coordinate.y - ray.origin.y) * (1.0 / ray.direction.y)
-        ty2 = (self.max_coordinate.y - ray.origin.y) * (1.0 / ray.direction.y)
+        ty1 = (self.min_coordinate.y - ray.origin.y) * (math.inf if ray.direction.y == 0 else (1.0 / ray.direction.y))
+        ty2 = (self.max_coordinate.y - ray.origin.y) * (math.inf if ray.direction.y == 0 else (1.0 / ray.direction.y))
 
         tmin = max(tmin, min(ty1, ty2))
         tmax = min(tmax, max(ty1, ty2))
 
-        tz1 = (self.min_coordinate.z - ray.origin.z) * (1.0 / ray.direction.z)  # ray.n_inv.z
-        tz2 = (self.max_coordinate.z - ray.origin.z) * (1.0 / ray.direction.z)  # ray.n_inv.z
+        tz1 = (self.min_coordinate.z - ray.origin.z) * (math.inf if ray.direction.z == 0 else (1.0 / ray.direction.z))  # ray.n_inv.z
+        tz2 = (self.max_coordinate.z - ray.origin.z) * (math.inf if ray.direction.z == 0 else (1.0 / ray.direction.z))  # ray.n_inv.z
 
         tmin = max(tmin, min(tz1, tz2))
         tmax = min(tmax, max(tz1, tz2))
 
-        return tmax >= max(0.0, tmin) and tmin < t
+        return tmax >= max(0.0, tmin) and tmin <= t
 
     def intersection(self, ray: Ray) -> bool:
         # Check if ray is originating within this AABB
