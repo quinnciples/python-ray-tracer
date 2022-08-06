@@ -194,7 +194,7 @@ class Scene:
         lighting_samples: int = 1,
         cores_to_use: int = 1,
     ) -> None:
-        number_of_buckets = 10
+        number_of_buckets = max(10, cores_to_use)
         cores_to_use = max(cores_to_use, 1) if cores_to_use != 0 else cpu_count()
         pool = Pool(processes=cores_to_use)
         arguments = [
@@ -314,7 +314,12 @@ class Scene:
                     fail = False
                     center = Q_Vector3d((a / 1.0) + 1.0 * random.random(), 0.2, (b / 1.0) + 1.0 * random.random() + 4)
                     for sphere in self.objects:
-                        if (sphere.position - center).length < 0.22 or (center - Q_Vector3d(4, 0.2, 4)).length <= 1.1 or (center - Q_Vector3d(0, 0.2, 4)).length <= 1.1 or (center - Q_Vector3d(-4, 0.2, 4)).length <= 1.1:
+                        if (
+                            (sphere.position - center).length < 0.22
+                            or (center - Q_Vector3d(4, 0.2, 4)).length <= 1.1
+                            or (center - Q_Vector3d(0, 0.2, 4)).length <= 1.1
+                            or (center - Q_Vector3d(-4, 0.2, 4)).length <= 1.1
+                        ):
                             fail = True
                             break
 
@@ -324,25 +329,53 @@ class Scene:
                     # Diffuse material
                     # Random color
                     color_value = Q_Vector3d(random.random(), random.random(), random.random())
-                    self.objects.append(SpherePrimitive(position=center, material=Diffuse(attenuation=color_value), radius=0.2))
+                    self.objects.append(
+                        SpherePrimitive(position=center, material=Diffuse(attenuation=color_value), radius=0.2)
+                    )
                 elif choose_mat < 0.90:
                     # Metal
-                    color_value = Q_Vector3d(random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5)
+                    color_value = Q_Vector3d(
+                        random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5, random.random() / 2.0 + 0.5
+                    )
                     fuzz = random.random() / 2.0
                     fuzz = 0 if fuzz < 0.15 else fuzz
-                    self.objects.append(SpherePrimitive(position=center, material=Metal(attenuation=color_value, fuzziness=float(fuzz)), radius=0.2))
+                    self.objects.append(
+                        SpherePrimitive(
+                            position=center, material=Metal(attenuation=color_value, fuzziness=float(fuzz)), radius=0.2
+                        )
+                    )
                 else:
                     # Glass
-                    self.objects.append(SpherePrimitive(position=center, material=Glass(refraction_index=1.5), radius=0.2))
+                    self.objects.append(
+                        SpherePrimitive(position=center, material=Glass(refraction_index=1.5), radius=0.2)
+                    )
 
-        self.objects.append(SpherePrimitive(position=Q_Vector3d(0, -1000.0001, 4), material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)), radius=1000))
-        self.objects.append(SpherePrimitive(position=Q_Vector3d(0, 1, 4), material=Glass(refraction_index=1.5), radius=1.0))
-        self.objects.append(SpherePrimitive(position=Q_Vector3d(-4, 1, 4), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0))
-        self.objects.append(SpherePrimitive(position=Q_Vector3d(4, 1, 4), material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0), radius=1.0))
+        self.objects.append(
+            SpherePrimitive(
+                position=Q_Vector3d(0, -1000.0001, 4),
+                material=Diffuse(attenuation=Q_Vector3d(0.5, 0.5, 0.5)),
+                radius=1000,
+            )
+        )
+        self.objects.append(
+            SpherePrimitive(position=Q_Vector3d(0, 1, 4), material=Glass(refraction_index=1.5), radius=1.0)
+        )
+        self.objects.append(
+            SpherePrimitive(
+                position=Q_Vector3d(-4, 1, 4), material=Diffuse(attenuation=Q_Vector3d(0.4, 0.2, 0.1)), radius=1.0
+            )
+        )
+        self.objects.append(
+            SpherePrimitive(
+                position=Q_Vector3d(4, 1, 4),
+                material=Metal(attenuation=Q_Vector3d(0.7, 0.6, 0.5), fuzziness=0.0),
+                radius=1.0,
+            )
+        )
 
-        print(f'\n{len(self.objects)} added to scene...')
-        print('*' * 40)
+        print(f"\n{len(self.objects)} added to scene...")
+        print("*" * 40)
         print()
-        with open('render_settings.txt', 'w') as f_out:
+        with open("render_settings.txt", "w") as f_out:
             for o in self.objects:
-                f_out.write(repr(o) + '\n')
+                f_out.write(repr(o) + "\n")
